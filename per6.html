@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi Algoritma Pewarnaan Graf Welch-Powell</title>
+    <style>
+        /* Base styles adapted from Tailwind's preflight and common utilities */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb; /* gray-200 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            line-height: inherit;
+            background-color: #fce7f3; /* bg-pink-100 */
+            padding: 1rem; /* p-4 */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Container styling */
+        .max-w-5xl {
+            max-width: 64rem; /* Equivalent to 1024px, common for max-w-5xl */
+        }
+        .w-full {
+            width: 100%;
+        }
+        .bg-white {
+            background-color: #fff;
+        }
+        .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .rounded-lg {
+            border-radius: 0.5rem;
+        }
+        .p-6 {
+            padding: 1.5rem;
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:p-8 {
+                padding: 2rem;
+            }
+        }
+        .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 2rem;
+            margin-bottom: 0;
+        }
+
+        /* Heading styles */
+        .text-3xl {
+            font-size: 1.875rem; /* 30px */
+            line-height: 2.25rem; /* 36px */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:text-4xl {
+                font-size: 2.25rem; /* 36px */
+                line-height: 2.5rem; /* 40px */
+            }
+        }
+        .font-extrabold {
+            font-weight: 800;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-gray-800 {
+            color: #1f2937;
+        }
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Grid layout */
+        .grid {
+            display: grid;
+        }
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .gap-6 {
+            gap: 1.5rem;
+        }
+
+        /* Input section styling */
+        .border {
+            border-width: 1px;
+        }
+        .border-blue-200 {
+            border-color: #bfdbfe;
+        }
+        .rounded-xl {
+            border-radius: 0.75rem;
+        }
+        .p-4 {
+            padding: 1rem;
+        }
+        .bg-blue-50 {
+            background-color: #eff6ff;
+        }
+        .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .text-2xl {
+            font-size: 1.5rem; /* 24px */
+            line-height: 2rem; /* 32px */
+        }
+        .font-bold {
+            font-weight: 700;
+        }
+        .text-blue-700 {
+            color: #1d4ed8;
+        }
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+        .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 1.5rem;
+            margin-bottom: 0;
+        }
+        .block {
+            display: block;
+        }
+        .text-gray-700 {
+            color: #374151;
+        }
+        .font-medium {
+            font-weight: 500;
+        }
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Textarea styling */
+        textarea {
+            display: block;
+            padding: 0.5rem; /* p-2 */
+            border-width: 1px;
+            border-color: #d1d5db; /* border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            /* Focus styles: mimic Tailwind's focus:ring and focus:border */
+            outline: 2px solid transparent; /* For focus outline */
+            outline-offset: 2px;
+            box-shadow: none; /* Reset default browser shadow */
+            transition: all 0.15s ease-in-out; /* Smooth transition for focus */
+        }
+        textarea:focus {
+            border-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* Simulating focus:ring-blue-500 */
+        }
+        .font-mono {
+            font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        .text-sm {
+            font-size: 0.875rem; /* 14px */
+            line-height: 1.25rem; /* 20px */
+        }
+        .text-gray-500 {
+            color: #6b7280;
+        }
+        .mt-1 {
+            margin-top: 0.25rem;
+        }
+
+        /* Button styling */
+        button {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 0.5rem; /* rounded-lg */
+            padding-top: 0.5rem; /* py-2 */
+            padding-bottom: 0.5rem;
+            padding-left: 1rem; /* px-4 */
+            padding-right: 1rem;
+            font-weight: 700; /* font-bold */
+            color: #fff; /* text-white */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            display: block; /* w-full or flex-1 */
+            width: 100%; /* added for w-full equivalent */
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+        .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0.75rem;
+            margin-bottom: 0;
+        }
+        .pt-4 {
+            padding-top: 1rem;
+        }
+
+        .bg-indigo-600 {
+            background-color: #4f46e5;
+        }
+        .hover\:bg-indigo-700:hover {
+            background-color: #4338ca;
+        }
+        .bg-red-500 {
+            background-color: #ef4444;
+        }
+        .hover\:bg-red-600:hover {
+            background-color: #dc2626;
+        }
+
+        /* Canvas & Output Section Styling */
+        .items-center {
+            align-items: center;
+        }
+        .justify-center {
+            justify-content: center;
+        }
+        .border-gray-300 {
+            border-color: #d1d5db;
+        }
+        .bg-gray-50 {
+            background-color: #f9fafb;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            width: 100%; /* w-full */
+            height: auto; /* h-auto */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+        .mt-4 {
+            margin-top: 1rem;
+        }
+        .p-3 {
+            padding: 0.75rem;
+        }
+        .bg-gray-100 {
+            background-color: #f3f4f6;
+        }
+        .border-gray-200 {
+            border-color: #e5e7eb;
+        }
+        .text-gray-700 {
+            color: #374151;
+        }
+        .font-semibold {
+            font-weight: 600;
+        }
+        .text-lg {
+            font-size: 1.125rem; /* 18px */
+            line-height: 1.75rem; /* 28px */
+        }
+        .text-purple-700 {
+            color: #6d28d9;
+        }
+        .text-xs {
+            font-size: 0.75rem; /* 12px */
+            line-height: 1rem; /* 16px */
+        }
+        .text-gray-600 {
+            color: #4b5563;
+        }
+        .overflow-auto {
+            overflow: auto;
+        }
+        .h-32 {
+            height: 8rem; /* 128px */
+        }
+    </style>
+</head>
+<body class="bg-pink-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="max-w-5xl w-full bg-white shadow-lg rounded-lg p-6 md:p-8 space-y-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6">
+            Visualisasi Algoritma Pewarnaan Graf Welch-Powell
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-6 border border-blue-200 rounded-xl p-4 bg-blue-50 shadow-md">
+                <h2 class="text-2xl font-bold text-blue-700 mb-4">Input Graf</h2>
+
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Simpul & Posisi (Format: V1:x,y; V2:x,y; ...)</label>
+                    <textarea id="vertexInput" rows="4" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 font-mono text-sm" placeholder="Contoh: V1:50,50; V2:150,50; V3:100,150; V4:200,150">V1:50,50; V2:150,50; V3:250,50; V4:100,150; V5:200,150; V6:150,250; V7:250,250</textarea>
+                    <p class="text-sm text-gray-500 mt-1">Masukkan simpul dan posisinya. Pisahkan dengan `;`, X,Y dipisahkan `,`.</p>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Sisi/Koneksi (Format: V1-V2; V2-V3; ...)</label>
+                    <textarea id="edgeInput" rows="4" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 font-mono text-sm" placeholder="Contoh: V1-V2; V1-V3; V2-V3">V1-V2; V1-V4; V1-V5; V2-V3; V2-V4; V2-V5; V3-V5; V3-V7; V4-V5; V4-V6; V5-V6; V5-V7</textarea>
+                    <p class="text-sm text-gray-500 mt-1">Masukkan koneksi antar simpul. Pisahkan dengan `;`, simpul dipisahkan `-`.</p>
+                </div>
+
+                <div class="flex flex-col space-y-3 pt-4">
+                    <button id="colorizeGraphBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Warnai Graf (Welch-Powell)
+                    </button>
+                    <button id="clearCanvasBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Hapus Kanvas
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center justify-center border border-gray-300 rounded-xl p-4 bg-gray-50 shadow-md">
+                <canvas id="graphCanvas" width="400" height="400" class="w-full h-auto rounded-md"></canvas>
+                <div class="mt-4 p-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-700 w-full">
+                    <h3 class="font-bold text-gray-800 mb-2">Hasil Pewarnaan:</h3>
+                    <p>Bilangan Kromatik (χ(G)): <span id="chromaticNumber" class="font-semibold text-lg text-purple-700">Belum dihitung</span></p>
+                    <p class="mt-2 text-xs text-gray-600">Simpul berwarna sesuai algoritma Welch-Powell.</p>
+                </div>
+                <div id="outputLog" class="mt-4 p-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-700 overflow-auto h-32 w-full">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const vertexInput = document.getElementById('vertexInput');
+        const edgeInput = document.getElementById('edgeInput');
+        const colorizeGraphBtn = document.getElementById('colorizeGraphBtn');
+        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+        const chromaticNumberSpan = document.getElementById('chromaticNumber');
+        const outputLog = document.getElementById('outputLog');
+
+        const COLORS = [
+            '#FF6347', // Tomato (Merah)
+            '#6A5ACD', // SlateBlue (Biru)
+            '#3CB371', // MediumSeaGreen (Hijau)
+            '#FFD700', // Gold (Kuning)
+            '#8A2BE2', // BlueViolet (Ungu)
+            '#FF4500', // OrangeRed (Oranye)
+            '#20B2AA', // LightSeaGreen (Cyan)
+            '#DC143C', // Crimson (Merah Tua)
+            '#00BFFF', // DeepSkyBlue (Biru Cerah)
+            '#ADFF2F'  // GreenYellow (Kuning Kehijauan)
+        ];
+
+        /**
+         * Clears the canvas and the output log.
+         */
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            outputLog.innerHTML = '';
+            chromaticNumberSpan.textContent = 'Belum dihitung';
+            drawGrid(); // Redraw grid after clearing
+        }
+
+        /**
+         * Logs a message to the output log.
+         * @param {string} message - The message to log.
+         * @param {string} color - The color of the text (e.g., 'blue', 'green').
+         */
+        function logMessage(message, color = 'black') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = color;
+            outputLog.appendChild(p);
+            outputLog.scrollTop = outputLog.scrollHeight; // Auto-scroll to bottom
+        }
+
+        /**
+         * Draws the coordinate grid on the canvas (simple grid for pixel accuracy).
+         */
+        function drawGrid() {
+            ctx.fillStyle = '#fefefe';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#e8e8e8'; // Light gray for grid lines
+            ctx.lineWidth = 0.5;
+
+            for (let x = 0; x <= canvas.width; x += 20) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            for (let y = 0; y <= canvas.height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        /**
+         * Draws a vertex on the canvas.
+         * @param {Object} vertex - The vertex object {name, x, y, color}.
+         */
+        function drawVertex(vertex) {
+            ctx.beginPath();
+            ctx.arc(vertex.x, vertex.y, 15, 0, 2 * Math.PI); // Vertex circle
+            ctx.fillStyle = vertex.color || '#94a3b8'; // Default gray if no color
+            ctx.fill();
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(vertex.name, vertex.x, vertex.y);
+        }
+
+        /**
+         * Draws an edge on the canvas.
+         * @param {Object} vertex1 - First vertex object.
+         * @param {Object} vertex2 - Second vertex object.
+         */
+        function drawEdge(vertex1, vertex2) {
+            ctx.beginPath();
+            ctx.moveTo(vertex1.x, vertex1.y);
+            ctx.lineTo(vertex2.x, vertex2.y);
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        /**
+         * Parses input strings for vertices and edges.
+         * @returns {Object} - Object containing vertices and adjacency list.
+         */
+        function parseGraphInput() {
+            const vertices = {}; // {name: {x, y, color, degree, neighbors}}
+            const adjList = {};  // {name: [neighbor1, neighbor2]}
+
+            // Parse vertices
+            const vertexStrings = vertexInput.value.split(';').filter(s => s.trim() !== '');
+            vertexStrings.forEach(s => {
+                const parts = s.trim().split(':');
+                if (parts.length === 2) {
+                    const name = parts[0].trim();
+                    const coords = parts[1].trim().split(',').map(Number);
+                    if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                        vertices[name] = { name, x: coords[0], y: coords[1], color: null, degree: 0, neighbors: [] };
+                        adjList[name] = [];
+                    } else {
+                        logMessage(`Peringatan: Koordinat tidak valid untuk simpul ${name}.`, 'orange');
+                    }
+                } else {
+                    logMessage(`Peringatan: Format simpul tidak valid: "${s}". Gunakan format 'VName:x,y'.`, 'orange');
+                }
+            });
+
+            // Parse edges
+            const edgeStrings = edgeInput.value.split(';').filter(s => s.trim() !== '');
+            edgeStrings.forEach(s => {
+                const parts = s.trim().split('-');
+                if (parts.length === 2) {
+                    const v1Name = parts[0].trim();
+                    const v2Name = parts[1].trim();
+
+                    if (vertices[v1Name] && vertices[v2Name]) {
+                        // Add to adjacency list (undirected graph)
+                        adjList[v1Name].push(v2Name);
+                        adjList[v2Name].push(v1Name);
+                    } else {
+                        logMessage(`Peringatan: Sisi ${v1Name}-${v2Name} memiliki simpul yang tidak terdefinisi.`, 'orange');
+                    }
+                } else {
+                    logMessage(`Peringatan: Format sisi tidak valid: "${s}". Gunakan format 'V1-V2'.`, 'orange');
+                }
+            });
+
+            // Calculate degrees and assign neighbors to vertex objects
+            for (const vName in vertices) {
+                vertices[vName].neighbors = adjList[vName];
+                vertices[vName].degree = adjList[vName].length;
+            }
+
+            return { vertices: Object.values(vertices), adjList };
+        }
+
+        /**
+         * Implements the Welch-Powell graph coloring algorithm.
+         * @param {Array<Object>} vertices - Array of vertex objects.
+         * @returns {Object} - {coloredVertices: Array, chromaticNumber: number}
+         */
+        function welchPowell(vertices) {
+            // Step 1: Sort vertices by degree in decreasing order
+            const sortedVertices = [...vertices].sort((a, b) => b.degree - a.degree);
+            logMessage(`Simpul diurutkan berdasarkan derajat: ${sortedVertices.map(v => `${v.name}(${v.degree})`).join(', ')}`, 'blue');
+
+            let currentColorIndex = 0;
+            let coloredVertices = JSON.parse(JSON.stringify(vertices)); // Deep copy to preserve original
+
+            while (coloredVertices.some(v => v.color === null)) {
+                const color = COLORS[currentColorIndex % COLORS.length];
+                logMessage(`Menggunakan warna: ${color} (Warna #${currentColorIndex + 1})`, 'blue');
+
+                // Step 2 & 3: Color the first uncolored vertex with the current color
+                // And then iteratively color uncolored vertices not adjacent to already colored ones of this color
+                for (let i = 0; i < sortedVertices.length; i++) {
+                    const currentVertex = coloredVertices.find(v => v.name === sortedVertices[i].name);
+
+                    if (currentVertex.color === null) {
+                        let canBeColored = true;
+                        // Check if currentVertex is adjacent to any vertex already colored with 'color'
+                        for (const neighborName of currentVertex.neighbors) {
+                            const neighbor = coloredVertices.find(v => v.name === neighborName);
+                            if (neighbor.color === color) {
+                                canBeColored = false;
+                                break;
+                            }
+                        }
+
+                        if (canBeColored) {
+                            currentVertex.color = color;
+                            logMessage(`   Mewarnai ${currentVertex.name} dengan ${color}`, 'darkblue');
+                        }
+                    }
+                }
+                currentColorIndex++;
+            }
+
+            chromaticNumberSpan.textContent = currentColorIndex;
+            return { coloredVertices, chromaticNumber: currentColorIndex };
+        }
+
+        /**
+         * Main function to color and draw the graph.
+         */
+        function colorizeGraph() {
+            clearCanvas();
+            const { vertices, adjList } = parseGraphInput();
+
+            if (Object.keys(vertices).length === 0) {
+                logMessage('Tidak ada simpul yang terdeteksi atau format salah.', 'red');
+                return;
+            }
+
+            // Draw all edges first (underneath vertices)
+            for (const vertex of vertices) {
+                for (const neighborName of vertex.neighbors) {
+                    const neighbor = vertices.find(v => v.name === neighborName);
+                    // Draw edge only once (e.g., if v1-v2, don't draw v2-v1)
+                    if (neighbor && vertex.name < neighbor.name) {
+                        drawEdge(vertex, neighbor);
+                    }
+                }
+            }
+
+            // Apply Welch-Powell algorithm
+            const { coloredVertices, chromaticNumber } = welchPowell(vertices);
+
+            // Draw colored vertices on top of edges
+            coloredVertices.forEach(v => drawVertex(v));
+            
+            logMessage(`Pewarnaan graf selesai. Bilangan Kromatik: ${chromaticNumber}`, 'green');
+        }
+
+        // Event Listeners
+        colorizeGraphBtn.addEventListener('click', colorizeGraph);
+        clearCanvasBtn.addEventListener('click', clearCanvas);
+
+        // Initial draw of the grid
+        drawGrid();
+        // Optionally, colorize with default values on load
+        colorizeGraph();
+    </script>
+</body>
+</html>

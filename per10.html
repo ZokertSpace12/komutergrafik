@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi Line Clipping (Cohen-Sutherland)</title>
+    <style>
+        /* Custom font for a clean look */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fce4ec; /* bg-pink-100 */
+            padding: 1rem; /* p-4 */
+            min-height: 100vh; /* min-h-screen */
+            display: flex; /* flex */
+            align-items: center; /* items-center */
+            justify-content: center; /* justify-center */
+        }
+
+        .container {
+            max-width: 80rem; /* max-w-5xl, custom value for better fit */
+            width: 100%; /* w-full */
+            background-color: #ffffff; /* bg-white */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 1.5rem; /* p-6 */
+            margin: 2rem; /* Add some margin for smaller screens */
+            display: flex; /* flex */
+            flex-direction: column; /* flex-col */
+            gap: 2rem; /* space-y-8 */
+        }
+
+        @media (min-width: 768px) { /* md:p-8 */
+            .container {
+                padding: 2rem;
+            }
+        }
+
+        h1 {
+            font-size: 2.25rem; /* text-3xl */
+            line-height: 2.5rem;
+            font-weight: 800; /* font-extrabold */
+            text-align: center; /* text-center */
+            color: #1a202c; /* text-gray-800 */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+
+        @media (min-width: 768px) { /* md:text-4xl */
+            h1 {
+                font-size: 2.5rem;
+                line-height: 1;
+            }
+        }
+
+        .grid-container { /* Replaces grid grid-cols-1 md:grid-cols-2 gap-6 */
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem; /* gap-6 */
+        }
+
+        @media (min-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .controls-section { /* Replaces space-y-6 border border-blue-200 rounded-xl p-4 bg-blue-50 shadow-md */
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* space-y-6 */
+            border: 1px solid #bfdbfe; /* border-blue-200 */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1rem; /* p-4 */
+            background-color: #eff6ff; /* bg-blue-50 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+
+        h2 {
+            font-size: 1.5rem; /* text-2xl */
+            line-height: 2rem;
+            font-weight: 700; /* font-bold */
+            color: #1d4ed8; /* text-blue-700 */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+
+        .section-group { /* Replaces space-y-2 */
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem; /* space-y-2 */
+        }
+
+        h3 {
+            font-size: 1.25rem; /* text-xl */
+            line-height: 1.75rem;
+            font-weight: 600; /* font-semibold */
+            color: #2563eb; /* text-blue-600 */
+        }
+
+        .input-grid-2 { /* Replaces grid grid-cols-2 gap-4 */
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem; /* gap-4 */
+        }
+
+        .input-grid-4 { /* Replaces grid grid-cols-4 gap-2 */
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.5rem; /* gap-2 */
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+            color: #4a5568; /* gray-700 */
+        }
+
+        .input-group input[type="number"],
+        .line-input input[type="number"] { /* Add styling for line input fields */
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cbd5e0; /* gray-300 */
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        hr {
+            border-top-width: 1px;
+            border-color: #93c5fd; /* border-blue-300 */
+            margin-top: 1rem; /* my-4 */
+            margin-bottom: 1rem; /* my-4 */
+        }
+
+        button {
+            transition: all 0.3s ease;
+            color: #ffffff; /* text-white */
+            font-weight: 700; /* font-bold */
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            width: 100%; /* w-full */
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        /* Specific button colors */
+        #addLineBtn {
+            background-color: #22c55e; /* bg-green-500 */
+        }
+        #addLineBtn:hover {
+            background-color: #16a34a; /* hover:bg-green-600 */
+        }
+
+        #removeLineBtn {
+            background-color: #f59e0b; /* bg-yellow-500 */
+        }
+        #removeLineBtn:hover {
+            background-color: #d97706; /* hover:bg-yellow-600 */
+        }
+
+        #applyClippingBtn {
+            background-color: #4f46e5; /* bg-indigo-600 */
+        }
+        #applyClippingBtn:hover {
+            background-color: #4338ca; /* hover:bg-indigo-700 */
+        }
+
+        #clearCanvasBtn {
+            background-color: #ef4444; /* bg-red-500 */
+            margin-top: 1rem; /* mt-4 */
+        }
+        #clearCanvasBtn:hover {
+            background-color: #dc2626; /* hover:bg-red-600 */
+        }
+
+        .flex-space-x-2 { /* Replaces flex space-x-2 */
+            display: flex;
+            gap: 0.5rem; /* space-x-2 */
+            margin-top: 0.75rem; /* mt-3 */
+        }
+        .flex-space-x-2 button {
+            flex: 1; /* flex-1 */
+        }
+
+        /* Canvas & Output Section */
+        .canvas-output-section { /* Replaces flex flex-col items-center justify-center border border-gray-300 rounded-xl p-4 bg-gray-50 shadow-md */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1rem; /* p-4 */
+            background-color: #f9fafb; /* bg-gray-50 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            width: 100%; /* w-full */
+            height: auto; /* h-auto */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+
+        .canvas-caption { /* Replaces text-gray-600 mt-2 text-sm */
+            color: #4b5563; /* text-gray-600 */
+            margin-top: 0.5rem; /* mt-2 */
+            font-size: 0.875rem; /* text-sm */
+        }
+
+        #outputLog {
+            margin-top: 1rem; /* mt-4 */
+            padding: 0.75rem; /* p-3 */
+            background-color: #f3f4f6; /* bg-gray-100 */
+            border: 1px solid #e5e7eb; /* border-gray-200 */
+            border-radius: 0.375rem; /* rounded-md */
+            font-size: 0.875rem; /* text-sm */
+            color: #374151; /* text-gray-700 */
+            overflow: auto; /* overflow-auto */
+            height: 8rem; /* h-32 */
+            width: 100%; /* w-full */
+        }
+    </style>
+</head>
+<body class="bg-pink-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="container">
+        <h1>Visualisasi Line Clipping (Cohen-Sutherland)</h1>
+
+        <div class="grid-container">
+            <div class="controls-section">
+                <h2>Pengaturan Clipping</h2>
+
+                <div class="section-group">
+                    <h3>Jendela Clipping (xmin, ymin, xmax, ymax)</h3>
+                    <div class="input-grid-2">
+                        <div class="input-group">
+                            <label for="xmin">X Min:</label>
+                            <input type="number" id="xmin" value="100">
+                        </div>
+                        <div class="input-group">
+                            <label for="ymin">Y Min:</label>
+                            <input type="number" id="ymin" value="100">
+                        </div>
+                        <div class="input-group">
+                            <label for="xmax">X Max:</label>
+                            <input type="number" id="xmax" value="300">
+                        </div>
+                        <div class="input-group">
+                            <label for="ymax">Y Max:</label>
+                            <input type="number" id="ymax" value="300">
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="section-group">
+                    <h3>Definisi Garis (x1, y1, x2, y2)</h3>
+                    <div id="linesContainer" class="section-group">
+                        <div class="line-input input-grid-4">
+                            <input type="number" value="50" placeholder="x1">
+                            <input type="number" value="50" placeholder="y1">
+                            <input type="number" value="350" placeholder="x2">
+                            <input type="number" value="350" placeholder="y2">
+                        </div>
+                        <div class="line-input input-grid-4">
+                            <input type="number" value="150" placeholder="x1">
+                            <input type="number" value="150" placeholder="y1">
+                            <input type="number" value="250" placeholder="x2">
+                            <input type="number" value="250" placeholder="y2">
+                        </div>
+                        <div class="line-input input-grid-4">
+                            <input type="number" value="50" placeholder="x1">
+                            <input type="number" value="200" placeholder="y1">
+                            <input type="number" value="350" placeholder="x2">
+                            <input type="number" value="200" placeholder="y2">
+                        </div>
+                        <div class="line-input input-grid-4">
+                            <input type="number" value="200" placeholder="x1">
+                            <input type="number" value="50" placeholder="y1">
+                            <input type="number" value="200" placeholder="x2">
+                            <input type="number" value="350" placeholder="y2">
+                        </div>
+                    </div>
+                    <div class="flex-space-x-2">
+                        <button id="addLineBtn">Tambah Garis</button>
+                        <button id="removeLineBtn">Hapus Garis Terakhir</button>
+                    </div>
+                </div>
+
+                <button id="applyClippingBtn">
+                    Terapkan Clipping
+                </button>
+                <button id="clearCanvasBtn">
+                    Hapus Semua & Reset
+                </button>
+            </div>
+
+            <div class="canvas-output-section">
+                <canvas id="clippingCanvas" width="400" height="400"></canvas>
+                <p class="canvas-caption">Garis asli (abu-abu), garis hasil clipping (biru).</p>
+                <div id="outputLog">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('clippingCanvas');
+        const ctx = canvas.getContext('2d');
+        const outputLog = document.getElementById('outputLog');
+
+        const xminInput = document.getElementById('xmin');
+        const yminInput = document.getElementById('ymin');
+        const xmaxInput = document.getElementById('xmax');
+        const ymaxInput = document.getElementById('ymax');
+        const linesContainer = document.getElementById('linesContainer');
+        const addLineBtn = document.getElementById('addLineBtn');
+        const removeLineBtn = document.getElementById('removeLineBtn');
+        const applyClippingBtn = document.getElementById('applyClippingBtn');
+        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+
+        // Region codes (outcodes) for Cohen-Sutherland
+        const INSIDE = 0; // 0000
+        const LEFT   = 1; // 0001
+        const RIGHT  = 2; // 0010
+        const BOTTOM = 4; // 0100
+        const TOP    = 8; // 1000
+
+        /**
+         * Clears the canvas and the output log.
+         */
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            outputLog.innerHTML = '';
+            resetLineInputs(); // Reset to default lines
+            drawWindow(); // Draw clipping window
+            drawLines(getLinesFromInputs(), 'gray', 'Garis Asli'); // Draw default lines
+            logMessage('Kanvas dibersihkan dan input direset.');
+        }
+
+        /**
+         * Logs a message to the output log.
+         * @param {string} message - The message to log.
+         * @param {string} color - The color of the text.
+         */
+        function logMessage(message, color = 'black') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = color;
+            outputLog.appendChild(p);
+            outputLog.scrollTop = outputLog.scrollHeight;
+        }
+
+        /**
+         * Draws a line on the canvas.
+         * @param {Object} line - {x1, y1, x2, y2}
+         * @param {string} color - Stroke color.
+         * @param {string} label - Label for the log.
+         */
+        function drawLine(line, color, label = '') {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(line.x1, line.y1);
+            ctx.lineTo(line.x2, line.y2);
+            ctx.stroke();
+            if (label) {
+                logMessage(`${label}: (${line.x1},${line.y1}) ke (${line.x2},${line.y2})`, color);
+            }
+        }
+
+        /**
+         * Draws multiple lines on the canvas.
+         * @param {Array<Object>} lines - Array of line objects.
+         * @param {string} color - Stroke color.
+         * @param {string} label - Base label for logging each line.
+         */
+        function drawLines(lines, color, label) {
+            lines.forEach((line, index) => {
+                drawLine(line, color, `${label} ${index + 1}`);
+            });
+        }
+
+        /**
+         * Draws the clipping window.
+         */
+        function drawWindow() {
+            const xmin = parseFloat(xminInput.value);
+            const ymin = parseFloat(yminInput.value);
+            const xmax = parseFloat(xmaxInput.value);
+            const ymax = parseFloat(ymaxInput.value);
+
+            ctx.strokeStyle = '#dc2626'; // Red color for window
+            ctx.lineWidth = 3;
+            ctx.strokeRect(xmin, ymin, xmax - xmin, ymax - ymin);
+            logMessage(`Jendela Clipping: (${xmin},${ymin}) - (${xmax},${ymax})`, 'red');
+        }
+
+        /**
+         * Computes the region code for a point (x, y).
+         * @param {number} x
+         * @param {number} y
+         * @param {number} xmin
+         * @param {number} ymin
+         * @param {number} xmax
+         * @param {number} ymax
+         * @returns {number} - The region code (outcode).
+         */
+        function computeOutCode(x, y, xmin, ymin, xmax, ymax) {
+            let code = INSIDE; // initialised as being inside the clipping window
+
+            if (x < xmin)       // to the left of clip window
+                code |= LEFT;
+            else if (x > xmax) // to the right of clip window
+                code |= RIGHT;
+            if (y < ymin)       // below the clip window
+                code |= BOTTOM;
+            else if (y > ymax) // above the clip window
+                code |= TOP;
+
+            return code;
+        }
+
+        /**
+         * Implements the Cohen-Sutherland line clipping algorithm.
+         * @param {Object} line - {x1, y1, x2, y2}
+         * @param {number} xmin
+         * @param {number} ymin
+         * @param {number} xmax
+         * @param {number} ymax
+         * @returns {Object|null} - Clipped line {x1, y1, x2, y2} or null if entirely outside.
+         */
+        function cohenSutherlandClip(line, xmin, ymin, xmax, ymax) {
+            let x1 = line.x1, y1 = line.y1;
+            let x2 = line.x2, y2 = line.y2;
+
+            let outcode1 = computeOutCode(x1, y1, xmin, ymin, xmax, ymax);
+            let outcode2 = computeOutCode(x2, y2, xmin, ymin, xmax, ymax);
+
+            let accept = false;
+
+            while (true) {
+                if ((outcode1 === 0) && (outcode2 === 0)) { // Both endpoints inside
+                    accept = true;
+                    break;
+                } else if (outcode1 & outcode2) { // Both endpoints outside and in same region (trivial reject)
+                    break;
+                } else { // Line needs clipping
+                    let x, y;
+                    let outcodeOut = outcode1 !== 0 ? outcode1 : outcode2; // Select point outside window
+
+                    // Find intersection point; use formulas from the PDF for line intersection x=x1+u(x2-x1), y=y1+u(y2-y1)
+                    if (outcodeOut & TOP) { // Point is above the clip window
+                        x = x1 + (x2 - x1) * (ymax - y1) / (y2 - y1);
+                        y = ymax;
+                    } else if (outcodeOut & BOTTOM) { // Point is below the clip window
+                        x = x1 + (x2 - x1) * (ymin - y1) / (y2 - y1);
+                        y = ymin;
+                    } else if (outcodeOut & RIGHT) { // Point is to the right of clip window
+                        y = y1 + (y2 - y1) * (xmax - x1) / (x2 - x1);
+                        x = xmax;
+                    } else if (outcodeOut & LEFT) { // Point is to the left of clip window
+                        y = y1 + (y2 - y1) * (xmin - x1) / (x2 - x1);
+                        x = xmin;
+                    }
+
+                    // Now update the point that was outside the window with the intersection point
+                    if (outcodeOut === outcode1) {
+                        x1 = x;
+                        y1 = y;
+                        outcode1 = computeOutCode(x1, y1, xmin, ymin, xmax, ymax);
+                    } else {
+                        x2 = x;
+                        y2 = y;
+                        outcode2 = computeOutCode(x2, y2, xmin, ymin, xmax, ymax);
+                    }
+                }
+            }
+
+            if (accept) {
+                return { x1: x1, y1: y1, x2: x2, y2: y2 };
+            } else {
+                return null; // Line is entirely outside
+            }
+        }
+
+        /**
+         * Gets lines data from input fields.
+         * @returns {Array<Object>} - Array of line objects.
+         */
+        function getLinesFromInputs() {
+            const lines = [];
+            document.querySelectorAll('#linesContainer .line-input').forEach(div => {
+                const inputs = div.querySelectorAll('input[type="number"]');
+                if (inputs.length === 4) {
+                    lines.push({
+                        x1: parseFloat(inputs[0].value),
+                        y1: parseFloat(inputs[1].value),
+                        x2: parseFloat(inputs[2].value),
+                        y2: parseFloat(inputs[3].value)
+                    });
+                }
+            });
+            return lines;
+        }
+
+        /**
+         * Resets line input fields to default examples.
+         */
+        function resetLineInputs() {
+            linesContainer.innerHTML = `
+                <div class="line-input input-grid-4">
+                    <input type="number" value="50" placeholder="x1">
+                    <input type="number" value="50" placeholder="y1">
+                    <input type="number" value="350" placeholder="x2">
+                    <input type="number" value="350" placeholder="y2">
+                </div>
+                <div class="line-input input-grid-4">
+                    <input type="number" value="150" placeholder="x1">
+                    <input type="number" value="150" placeholder="y1">
+                    <input type="number" value="250" placeholder="x2">
+                    <input type="number" value="250" placeholder="y2">
+                </div>
+                <div class="line-input input-grid-4">
+                    <input type="number" value="50" placeholder="x1">
+                    <input type="number" value="200" placeholder="y1">
+                    <input type="number" value="350" placeholder="x2">
+                    <input type="number" value="200" placeholder="y2">
+                </div>
+                <div class="line-input input-grid-4">
+                    <input type="number" value="200" placeholder="x1">
+                    <input type="number" value="50" placeholder="y1">
+                    <input type="number" value="200" placeholder="x2">
+                    <input type="number" value="350" placeholder="y2">
+                </div>
+            `;
+        }
+
+        /**
+         * Adds a new line input field.
+         */
+        function addLineInput() {
+            const div = document.createElement('div');
+            div.className = 'line-input input-grid-4';
+            div.innerHTML = `
+                <input type="number" value="0" placeholder="x1">
+                <input type="number" value="0" placeholder="y1">
+                <input type="number" value="0" placeholder="x2">
+                <input type="number" value="0" placeholder="y2">
+            `;
+            linesContainer.appendChild(div);
+            logMessage('Input garis baru ditambahkan.');
+        }
+
+        /**
+         * Removes the last line input field.
+         */
+        function removeLineInput() {
+            if (linesContainer.children.length > 1) { // Ensure at least one line remains
+                linesContainer.lastElementChild.remove();
+                logMessage('Input garis terakhir dihapus.');
+            } else {
+                logMessage('Minimal satu garis diperlukan.', 'orange');
+            }
+        }
+
+        /**
+         * Main function to apply clipping and draw results.
+         */
+        function applyClipping() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+            outputLog.innerHTML = ''; // Clear log
+
+            drawWindow(); // Draw the clipping window first
+
+            const xmin = parseFloat(xminInput.value);
+            const ymin = parseFloat(yminInput.value);
+            const xmax = parseFloat(xmaxInput.value);
+            const ymax = parseFloat(ymaxInput.value);
+
+            const originalLines = getLinesFromInputs();
+
+            logMessage('--- Menerapkan Line Clipping (Cohen-Sutherland) ---', 'blue');
+            originalLines.forEach((line, index) => {
+                logMessage(`Memproses Garis ${index + 1}: (${line.x1},${line.y1}) - (${line.x2},${line.y2})`);
+                drawLine(line, '#a0a0a0', `Asli ${index + 1}`); // Draw original line in gray
+
+                const clippedLine = cohenSutherlandClip(line, xmin, ymin, xmax, ymax);
+
+                if (clippedLine) {
+                    drawLine(clippedLine, 'blue', `Dipotong ${index + 1}`); // Draw clipped line in blue
+                    logMessage(`   Garis ${index + 1} terlihat: (${clippedLine.x1.toFixed(2)},${clippedLine.y1.toFixed(2)}) - (${clippedLine.x2.toFixed(2)},${clippedLine.y2.toFixed(2)})`, 'darkblue');
+                } else {
+                    logMessage(`   Garis ${index + 1} tidak terlihat (dipotong sepenuhnya).`, 'red');
+                }
+            });
+            logMessage('Proses clipping selesai.', 'green');
+        }
+
+        // Event Listeners
+        addLineBtn.addEventListener('click', addLineInput);
+        removeLineBtn.addEventListener('click', removeLineInput);
+        applyClippingBtn.addEventListener('click', applyClipping);
+        clearCanvasBtn.addEventListener('click', clearCanvas);
+
+        // Initial setup on load
+        window.addEventListener('load', () => {
+            clearCanvas(); // Draw initial window and lines
+        });
+    </script>
+</body>
+</html>

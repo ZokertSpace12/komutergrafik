@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Dasar Grafika 3D</title>
+    <style>
+        /* Custom font for a clean look */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fce4ec; /* bg-pink-100 */
+            padding: 1rem; /* p-4 */
+            min-height: 100vh; /* min-h-screen */
+            display: flex; /* flex */
+            align-items: center; /* items-center */
+            justify-content: center; /* justify-center */
+        }
+
+        .container {
+            max-width: 64rem; /* max-w-4xl */
+            width: 100%; /* w-full */
+            background-color: #ffffff; /* bg-white */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 1.5rem; /* p-6 */
+            display: flex; /* flex */
+            flex-direction: column; /* flex-col */
+            gap: 2rem; /* space-y-8 */
+        }
+
+        @media (min-width: 768px) { /* md:p-8 */
+            .container {
+                padding: 2rem;
+            }
+        }
+
+        h1 {
+            font-size: 2.25rem; /* text-3xl */
+            line-height: 2.5rem;
+            font-weight: 800; /* font-extrabold */
+            text-align: center; /* text-center */
+            color: #1a202c; /* text-gray-800 */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+
+        @media (min-width: 768px) { /* md:text-4xl */
+            h1 {
+                font-size: 2.5rem;
+                line-height: 1;
+            }
+        }
+
+        .grid-container { /* Replaces grid grid-cols-1 md:grid-cols-2 gap-6 */
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem; /* gap-6 */
+        }
+
+        @media (min-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .controls-info-section { /* Replaces space-y-6 border border-blue-200 rounded-xl p-4 bg-blue-50 shadow-md */
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* space-y-6 */
+            border: 1px solid #bfdbfe; /* border-blue-200 */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1rem; /* p-4 */
+            background-color: #eff6ff; /* bg-blue-50 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+
+        h2 {
+            font-size: 1.5rem; /* text-2xl */
+            line-height: 2rem;
+            font-weight: 700; /* font-bold */
+            color: #1d4ed8; /* text-blue-700 */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+
+        .info-group { /* Replaces space-y-2 */
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem; /* space-y-2 */
+        }
+
+        .info-group p { /* Replaces text-gray-700 */
+            color: #4a5568; /* text-gray-700 */
+        }
+
+        .info-group span { /* For font-semibold text-blue-800 */
+            font-weight: 600; /* font-semibold */
+            color: #1e40af; /* text-blue-800 */
+        }
+
+        .info-group .italic-text { /* Replaces text-gray-600 text-sm italic mt-4 */
+            color: #4b5563; /* text-gray-600 */
+            font-size: 0.875rem; /* text-sm */
+            font-style: italic; /* italic */
+            margin-top: 1rem; /* mt-4 */
+        }
+
+        .button-group { /* Replaces flex flex-col space-y-3 pt-4 */
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem; /* space-y-3 */
+            padding-top: 1rem; /* pt-4 */
+        }
+
+        button {
+            transition: all 0.3s ease;
+            color: #ffffff; /* text-white */
+            font-weight: 700; /* font-bold */
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            width: 100%; /* w-full (added for consistency) */
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        /* Specific button colors */
+        #resetViewBtn {
+            background-color: #4b5563; /* bg-gray-600 */
+        }
+        #resetViewBtn:hover {
+            background-color: #374151; /* hover:bg-gray-700 */
+        }
+
+        /* 3D Canvas Section */
+        .canvas-section { /* Replaces flex flex-col items-center justify-center border border-gray-300 rounded-xl p-4 bg-gray-50 shadow-md */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1rem; /* p-4 */
+            background-color: #f9fafb; /* bg-gray-50 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f0f8ff; /* Light blue background for 3D scene */
+            display: block; /* Remove extra space below canvas */
+            width: 100%; /* w-full */
+            height: auto; /* h-auto */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+
+        .canvas-caption { /* Replaces text-gray-600 mt-2 text-sm */
+            color: #4b5563; /* text-gray-600 */
+            margin-top: 0.5rem; /* mt-2 */
+            font-size: 0.875rem; /* text-sm */
+        }
+
+        #outputLog {
+            margin-top: 1rem; /* mt-4 */
+            padding: 0.75rem; /* p-3 */
+            background-color: #f3f4f6; /* bg-gray-100 */
+            border: 1px solid #e5e7eb; /* border-gray-200 */
+            border-radius: 0.375rem; /* rounded-md */
+            font-size: 0.875rem; /* text-sm */
+            color: #374151; /* text-gray-700 */
+            overflow: auto; /* overflow-auto */
+            height: 6rem; /* h-24 */
+            width: 100%; /* w-full */
+        }
+    </style>
+</head>
+<body class="bg-pink-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="container">
+        <h1>Aplikasi Dasar Grafika 3D</h1>
+
+        <div class="grid-container">
+            <div class="controls-info-section">
+                <h2>Informasi Objek 3D</h2>
+
+                <div class="info-group">
+                    <p>Jenis Objek: <span class="font-semibold text-blue-800">Kubus (Primitif 3D)</span></p>
+                    <p>Rotasi X: <span id="rotationXValue">0.00</span> rad</p>
+                    <p>Rotasi Y: <span id="rotationYValue">0.00</span> rad</p>
+                    <p>Rotasi Z: <span id="rotationZValue">0.00</span> rad</p>
+                    <p class="italic-text">"Objek 3D memiliki kemampuan untuk membuat visualisasi dari sebuah benda yang nyata yang dapat dilihat dari berbagai sudut pandang." - Pertemuan 12, Hal. 139</p>
+                </div>
+
+                <div class="button-group">
+                    <button id="resetViewBtn">
+                        Reset Rotasi
+                    </button>
+                </div>
+            </div>
+
+            <div class="canvas-section">
+                <canvas id="threeJsCanvas" width="400" height="400"></canvas>
+                <p class="canvas-caption">Gunakan mouse untuk memutar objek.</p>
+                <div id="outputLog">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Three.js Core Library (minified for embedding)
+        // This is a highly truncated version for demonstration.
+        // In a real application, you'd use the full three.module.js or three.min.js from a local file.
+        // For brevity and to avoid a massive file for this example, I'm including only the absolute essentials.
+        // This might cause issues if your Three.js usage expands beyond very basic primitives and materials.
+        // It's highly recommended to download three.min.js and serve it locally for production.
+        const THREE = (function() {
+            const _Math = {
+                DEG2RAD: Math.PI / 180,
+                RAD2DEG: 180 / Math.PI,
+                clamp: function ( value, min, max ) { return Math.max( min, Math.min( max, value ) ); },
+                euclideanModulo: function ( n, m ) { return ( ( n % m ) + m ) % m; },
+                mapLinear: function ( x, a1, a2, b1, b2 ) { return b1 + ( x - a1 ) * ( b2 - b1 ) / ( a2 - a1 ); }
+            };
+
+            // Vector3 - Simplified for demonstration
+            class Vector3 {
+                constructor( x = 0, y = 0, z = 0 ) {
+                    this.x = x;
+                    this.y = y;
+                    this.z = z;
+                }
+                set( x, y, z ) { this.x = x; this.y = y; this.z = z; return this; }
+                normalize() { return this.divideScalar( this.length() || 1 ); }
+                lengthSq() { return this.x * this.x + this.y * this.y + this.z * this.z; }
+                length() { return Math.sqrt( this.lengthSq() ); }
+                divideScalar( scalar ) { return this.multiplyScalar( 1 / scalar ); }
+                multiplyScalar( scalar ) { this.x *= scalar; this.y *= scalar; this.z *= scalar; return this; }
+                add( v ) { this.x += v.x; this.y += v.y; this.z += v.z; return this; }
+                sub( v ) { this.x -= v.x; this.y -= v.y; this.z -= v.z; return this; }
+                clone() { return new Vector3( this.x, this.y, this.z ); }
+                copy( v ) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }
+                setScalar( scalar ) { this.x = scalar; this.y = scalar; this.z = scalar; return this; }
+            }
+
+            // Euler - Simplified for demonstration
+            class Euler {
+                constructor( x = 0, y = 0, z = 0, order = 'XYZ' ) {
+                    this._x = x;
+                    this._y = y;
+                    this._z = z;
+                    this._order = order;
+                }
+                get x() { return this._x; }
+                set x( value ) { this._x = value; this.onChangeCallback(); }
+                get y() { return this._y; }
+                set y( value ) { this._y = value; this.onChangeCallback(); }
+                get z() { return this._z; }
+                set z( value ) { this._z = value; this.onChangeCallback(); }
+                set( x, y, z, order = this._order ) {
+                    this._x = x;
+                    this._y = y;
+                    this._z = z;
+                    this._order = order;
+                    this.onChangeCallback();
+                    return this;
+                }
+                onChange( callback ) { this.onChangeCallback = callback; return this; }
+                onChangeCallback() {}
+            }
+
+            // Object3D - Simplified for demonstration
+            class Object3D {
+                constructor() {
+                    this.position = new Vector3();
+                    this.rotation = new Euler();
+                    this.scale = new Vector3( 1, 1, 1 );
+                    this.parent = null;
+                    this.children = [];
+                    this.up = new Vector3( 0, 1, 0 );
+                    this.type = 'Object3D';
+                    this.uuid = THREE.Math.generateUUID(); // Basic UUID generation
+                    this.rotation.onChange( () => this.onRotationChange() );
+                }
+                add( object ) {
+                    if ( object === this ) return;
+                    if ( object.parent !== null ) object.parent.remove( object );
+                    object.parent = this;
+                    this.children.push( object );
+                    return this;
+                }
+                remove( object ) {
+                    const index = this.children.indexOf( object );
+                    if ( index !== -1 ) {
+                        object.parent = null;
+                        this.children.splice( index, 1 );
+                    }
+                    return this;
+                }
+                onRotationChange() {
+                    // In a real Three.js, this would update a quaternion and matrix.
+                    // For this simplified example, we'll just allow direct Euler manipulation.
+                }
+            }
+
+            // Scene - Simplified
+            class Scene extends Object3D {
+                constructor() {
+                    super();
+                    this.type = 'Scene';
+                    this.background = null;
+                }
+            }
+
+            // Camera - Simplified
+            class Camera extends Object3D {
+                constructor() {
+                    super();
+                    this.matrixWorldInverse = new Float32Array( 16 );
+                    this.projectionMatrix = new Float32Array( 16 );
+                    this.isCamera = true; // For type checking
+                }
+            }
+
+            // PerspectiveCamera - Simplified
+            class PerspectiveCamera extends Camera {
+                constructor( fov = 50, aspect = 1, near = 0.1, far = 2000 ) {
+                    super();
+                    this.fov = fov;
+                    this.aspect = aspect;
+                    this.near = near;
+                    this.far = far;
+                    this.updateProjectionMatrix();
+                }
+                updateProjectionMatrix() {
+                    const top = this.near * Math.tan( _Math.DEG2RAD * 0.5 * this.fov );
+                    const height = 2 * top;
+                    const width = this.aspect * height;
+                    const left = - 0.5 * width;
+
+                    // This is a highly simplified projection matrix.
+                    // A real one involves more complex calculations for frustum.
+                    // For basic demo, it's sufficient if matrix isn't directly used by custom shaders.
+                    // The renderer implicitly handles the standard projection based on camera props.
+                    // We just need these properties to exist for compatibility.
+                    this.projectionMatrix.set([
+                        2 * this.near / width, 0, 0, 0,
+                        0, 2 * this.near / height, 0, 0,
+                        0, 0, - ( this.far + this.near ) / ( this.far - this.near ), - 1,
+                        0, 0, - 2 * this.far * this.near / ( this.far - this.near ), 0
+                    ]);
+                }
+            }
+
+            // Geometry - Base class
+            class BufferGeometry {
+                constructor() {
+                    this.attributes = {};
+                    this.index = null;
+                    this.uuid = THREE.Math.generateUUID();
+                }
+                setAttribute( name, attribute ) {
+                    this.attributes[ name ] = attribute;
+                }
+                setIndex( index ) {
+                    this.index = index;
+                }
+            }
+
+            // BoxGeometry - Simplified
+            class BoxGeometry extends BufferGeometry {
+                constructor( width = 1, height = 1, depth = 1, widthSegments = 1, heightSegments = 1, depthSegments = 1 ) {
+                    super();
+                    // In a real Three.js, this generates vertices, normals, UVs, etc.
+                    // For this embedded example, we don't need the actual buffer data
+                    // as the WebGLRenderer will typically handle fixed function pipeline
+                    // for basic shapes or require full buffer data for custom ones.
+                    // This is mostly a placeholder for the object structure.
+                }
+            }
+
+            // Material - Base class
+            class Material {
+                constructor() {
+                    this.uuid = THREE.Math.generateUUID();
+                    this.color = new Color( 0xffffff );
+                    this.opacity = 1;
+                    this.transparent = false;
+                    this.lights = true;
+                    this.type = 'Material';
+                }
+            }
+
+            // MeshBasicMaterial - Simplified
+            class MeshBasicMaterial extends Material {
+                constructor( parameters ) {
+                    super();
+                    this.type = 'MeshBasicMaterial';
+                    this.color = new Color( 0xffffff ); // Default color
+                    if ( parameters && parameters.color !== undefined ) this.color.set( parameters.color );
+                    if ( parameters && parameters.transparent !== undefined ) this.transparent = parameters.transparent;
+                    if ( parameters && parameters.opacity !== undefined ) this.opacity = parameters.opacity;
+                }
+            }
+
+            // MeshPhongMaterial - Simplified
+            class MeshPhongMaterial extends Material {
+                constructor( parameters ) {
+                    super();
+                    this.type = 'MeshPhongMaterial';
+                    this.color = new Color( 0xffffff );
+                    this.specular = new Color( 0x111111 );
+                    this.shininess = 30;
+                    this.flatShading = false;
+                    this.lights = true; // This material is affected by lights
+                    if ( parameters ) {
+                        if ( parameters.color !== undefined ) this.color.set( parameters.color );
+                        if ( parameters.specular !== undefined ) this.specular.set( parameters.specular );
+                        if ( parameters.shininess !== undefined ) this.shininess = parameters.shininess;
+                        if ( parameters.flatShading !== undefined ) this.flatShading = parameters.flatShading;
+                    }
+                }
+            }
+
+            // Color - Simplified
+            class Color {
+                constructor( r, g, b ) {
+                    this.isColor = true;
+                    if ( Array.isArray( r ) ) {
+                        this.setRGB( r[ 0 ], r[ 1 ], r[ 2 ] );
+                    } else if ( r && r.isColor ) {
+                        this.copy( r );
+                    } else if ( r !== undefined ) {
+                        this.set( r );
+                    } else {
+                        this.r = 1; this.g = 1; this.b = 1;
+                    }
+                }
+                set( value ) {
+                    if ( typeof value === 'number' ) {
+                        this.setHex( value );
+                    } else if ( typeof value === 'string' ) {
+                        this.setStyle( value );
+                    }
+                    return this;
+                }
+                setHex( hex ) {
+                    hex = Math.floor( hex );
+                    this.r = ( hex >> 16 & 255 ) / 255;
+                    this.g = ( hex >> 8 & 255 ) / 255;
+                    this.b = ( hex & 255 ) / 255;
+                    return this;
+                }
+                setStyle( style ) {
+                    // Very basic CSS color parsing for 'red', '#rrggbb', 'rgb(x,y,z)'
+                    const container = Color.__colorKeywords;
+                    if ( container[ style ] !== undefined ) {
+                        style = container[ style ];
+                    }
+                    if ( style.startsWith( '#' ) ) {
+                        this.setHex( parseInt( style.substring( 1 ), 16 ) );
+                    } else if ( style.startsWith( 'rgb(' ) ) {
+                        const parts = style.substring( 4, style.length - 1 ).split( ',' ).map( parseFloat );
+                        this.setRGB( parts[ 0 ] / 255, parts[ 1 ] / 255, parts[ 2 ] / 255 );
+                    } else {
+                        // Fallback or error
+                        console.warn( 'THREE.Color: Unknown color style:', style );
+                        this.setRGB( 0, 0, 0 );
+                    }
+                    return this;
+                }
+                setRGB( r, g, b ) {
+                    this.r = r;
+                    this.g = g;
+                    this.b = b;
+                    return this;
+                }
+                copy( color ) {
+                    this.r = color.r;
+                    this.g = color.g;
+                    this.b = color.b;
+                    return this;
+                }
+                getHex() {
+                    return Math.round( this.r * 255 ) * 65536 + Math.round( this.g * 255 ) * 256 + Math.round( this.b * 255 );
+                }
+                getStyle() {
+                    return `rgb(${ Math.round( this.r * 255 ) },${ Math.round( this.g * 255 ) },${ Math.round( this.b * 255 ) })`;
+                }
+            }
+            Color.__colorKeywords = {
+                'aliceblue': 0xF0F8FF, 'antiquewhite': 0xFAEBD7, 'aqua': 0x00FFFF, 'aquamarine': 0x7FFFD4, 'azure': 0xF0FFFF,
+                'beige': 0xF5F5DC, 'bisque': 0xFFE4C4, 'black': 0x000000, 'blanchedalmond': 0xFFEBCD, 'blue': 0x0000FF,
+                'blueviolet': 0x8A2BE2, 'brown': 0xA52A2A, 'burlywood': 0xDEB887, 'cadetblue': 0x5F9EA0, 'chartreuse': 0x7FFF00,
+                'chocolate': 0xD2691E, 'coral': 0xFF7F50, 'cornflowerblue': 0x6495ED, 'cornsilk': 0xFFF8DC, 'crimson': 0xDC143C,
+                'cyan': 0x00FFFF, 'darkblue': 0x00008B, 'darkcyan': 0x008B8B, 'darkgoldenrod': 0xB8860B, 'darkgray': 0xA9A9A9,
+                'darkgreen': 0x006400, 'darkgrey': 0xA9A9A9, 'darkkhaki': 0xBDB76B, 'darkmagenta': 0x8B008B,
+                'darkolivegreen': 0x556B2F, 'darkorange': 0xFF8C00, 'darkorchid': 0x9932CC, 'darkred': 0x8B0000,
+                'darksalmon': 0xE9967A, 'darkseagreen': 0x8FBC8F, 'darkslateblue': 0x483D8B, 'darkslategray': 0x2F4F4F,
+                'darkslategrey': 0x2F4F4F, 'darkturquoise': 0x00CED1, 'darkviolet': 0x9400D3, 'deeppink': 0xFF1493,
+                'deepskyblue': 0x00BFFF, 'dimgray': 0x696969, 'dimgrey': 0x696969, 'dodgerblue': 0x1E90FF,
+                'firebrick': 0xB22222, 'floralwhite': 0xFFFAF0, 'forestgreen': 0x228B22, 'fuchsia': 0xFF00FF,
+                'gainsboro': 0xDCDCDC, 'ghostwhite': 0xF8F8FF, 'gold': 0xFFD700, 'goldenrod': 0xDAA520, 'gray': 0x808080,
+                'green': 0x008000, 'greenyellow': 0xADFF2F, 'grey': 0x808080, 'honeydew': 0xF0FFF0, 'hotpink': 0xFF69B4,
+                'indianred': 0xCD5C5C, 'indigo': 0x4B0082, 'ivory': 0xFFFFF0, 'khaki': 0xF0E68C, 'lavender': 0xE6E6FA,
+                'lavenderblush': 0xFFF0F5, 'lawngreen': 0x7CFC00, 'lemonchiffon': 0xFFFACD, 'lightblue': 0xADD8E6,
+                'lightcoral': 0xF08080, 'lightcyan': 0xE0FFFF, 'lightgoldenrodyellow': 0xFAFAD2, 'lightgray': 0xD3D3D3,
+                'lightgreen': 0x90EE90, 'lightgrey': 0xD3D3D3, 'lightpink': 0xFFB6C1, 'lightsalmon': 0xFFA07A,
+                'lightseagreen': 0x20B2AA, 'lightskyblue': 0x87CEFA, 'lightslategray': 0x778899, 'lightslategrey': 0x778899,
+                'lightsteelblue': 0xB0C4DE, 'lightyellow': 0xFFFFE0, 'lime': 0x00FF00, 'limegreen': 0x32CD32,
+                'linen': 0xFAF0E6, 'magenta': 0xFF00FF, 'maroon': 0x800000, 'mediumaquamarine': 0x66CDAA,
+                'mediumblue': 0x0000CD, 'mediumorchid': 0xBA55D3, 'mediumpurple': 0x9370DB, 'mediumseagreen': 0x3CB371,
+                'mediumslateblue': 0x7B68EE, 'mediumspringgreen': 0x00FA9A, 'mediumturquoise': 0x48D1CC,
+                'mediumvioletred': 0xC71585, 'midnightblue': 0x191970, 'mintcream': 0xF5FFFA, 'mistyrose': 0xFFE4E1,
+                'moccasin': 0xFFE4B5, 'navajowhite': 0xFFDEAD, 'navy': 0x000080, 'oldlace': 0xFDF5E6, 'olive': 0x808000,
+                'olivedrab': 0x6B8E23, 'orange': 0xFFA500, 'orangered': 0xFF4500, 'orchid': 0xDA70D6,
+                'palegoldenrod': 0xEEE8AA, 'palegreen': 0x98FB98, 'paleturquoise': 0xAFEEEE, 'palevioletred': 0xDB7093,
+                'papayawhip': 0xFFEFD5, 'peachpuff': 0xFFDAB9, 'peru': 0xCD853F, 'pink': 0xFFC0CB, 'plum': 0xDDA0DD,
+                'powderblue': 0xB0E0E6, 'purple': 0x800080, 'red': 0xFF0000, 'rosybrown': 0xBC8F8F,
+                'royalblue': 0x4169E1, 'saddlebrown': 0x8B4513, 'salmon': 0xFA8072, 'sandybrown': 0xF4A460,
+                'seagreen': 0x2E8B57, 'seashell': 0xFFF5EE, 'sienna': 0xA0522D, 'silver': 0xC0C0C0, 'skyblue': 0x87CEEB,
+                'slateblue': 0x6A5ACD, 'slategray': 0x708090, 'slategrey': 0x708090, 'snow': 0xFFFAFA,
+                'springgreen': 0x00FF7F, 'steelblue': 0x4682B4, 'tan': 0xD2B48C, 'teal': 0x008080, 'thistle': 0xD8BFD8,
+                'tomato': 0xFF6347, 'turquoise': 0x40E0D0, 'violet': 0xEE82EE, 'wheat': 0xF5DEB3, 'white': 0xFFFFFF,
+                'whitesmoke': 0xF5F5F5, 'yellow': 0xFFFF00, 'yellowgreen': 0x9ACD32
+            };
+
+            // Lights - Base classes
+            class Light extends Object3D {
+                constructor( color, intensity = 1 ) {
+                    super();
+                    this.color = new Color( color );
+                    this.intensity = intensity;
+                    this.isLight = true;
+                }
+            }
+
+            class AmbientLight extends Light {
+                constructor( color, intensity ) {
+                    super( color, intensity );
+                    this.type = 'AmbientLight';
+                }
+            }
+
+            class DirectionalLight extends Light {
+                constructor( color, intensity ) {
+                    super( color, intensity );
+                    this.type = 'DirectionalLight';
+                    this.target = new Object3D(); // Light points at its target
+                }
+            }
+
+            // Mesh
+            class Mesh extends Object3D {
+                constructor( geometry = new BufferGeometry(), material = new Material() ) {
+                    super();
+                    this.isMesh = true;
+                    this.type = 'Mesh';
+                    this.geometry = geometry;
+                    this.material = material;
+                }
+            }
+
+            // WebGLRenderer - Highly simplified, essentially just hooks up to canvas context
+            class WebGLRenderer {
+                constructor( { canvas, antialias = false } = {} ) {
+                    this.domElement = canvas;
+                    try {
+                        this.gl = canvas.getContext( 'webgl', { antialias } ) || canvas.getContext( 'experimental-webgl', { antialias } );
+                    } catch ( error ) {
+                        console.error( 'THREE.WebGLRenderer: Unable to retrieve WebGL context.', error );
+                    }
+
+                    if ( ! this.gl ) {
+                        alert( 'Unable to initialize WebGL. Your browser or machine may not support it.' );
+                        return;
+                    }
+
+                    this.width = canvas.width;
+                    this.height = canvas.height;
+                    this.pixelRatio = 1;
+                    this.gl.clearColor( 0, 0, 0, 1 );
+                    this.gl.enable( this.gl.DEPTH_TEST );
+
+                    console.log('WebGLRenderer initialized.'); // For logging purposes
+
+                    // This is a *highly* simplified render method.
+                    // A real Three.js renderer handles shaders, matrices,
+                    // scene graph traversal, frustum culling, etc.
+                    // For this basic demo, we'll just draw a cube.
+                    // This renderer relies on the browser's default WebGL behavior for basic primitives.
+                    this.render = function( scene, camera ) {
+                        this.gl.viewport( 0, 0, this.gl.canvas.width, this.gl.canvas.height );
+
+                        const r = scene.background ? scene.background.r : 0;
+                        const g = scene.background ? scene.background.g : 0;
+                        const b = scene.background ? scene.background.b : 0;
+                        const a = scene.background ? 1 : 0; // Assume opaque background
+                        this.gl.clearColor( r, g, b, a );
+                        this.gl.clear( this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT );
+
+                        // The following is a gross oversimplification.
+                        // It assumes a single cube in the scene and directly applies its transformation.
+                        // A proper renderer would traverse the scene graph, apply parent transforms,
+                        // update matrices, set up uniforms for materials and lights, etc.
+                        scene.children.forEach( object => {
+                            if ( object.isMesh ) {
+                                const material = object.material;
+                                const color = material.color;
+
+                                // Use a simplified shader-like approach for basic coloring
+                                const fragmentShader = `
+                                    precision mediump float;
+                                    uniform vec3 uColor;
+                                    void main() {
+                                        gl_FragColor = vec4(uColor, 1.0);
+                                    }
+                                `;
+                                const vertexShader = `
+                                    attribute vec4 aVertexPosition;
+                                    uniform mat4 uModelViewMatrix;
+                                    uniform mat4 uProjectionMatrix;
+                                    void main() {
+                                        gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+                                    }
+                                `;
+
+                                const program = this.gl.createProgram();
+                                const vs = this.gl.createShader(this.gl.VERTEX_SHADER);
+                                this.gl.shaderSource(vs, vertexShader);
+                                this.gl.compileShader(vs);
+                                const fs = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+                                this.gl.shaderSource(fs, fragmentShader);
+                                this.gl.compileShader(fs);
+
+                                this.gl.attachShader(program, vs);
+                                this.gl.attachShader(program, fs);
+                                this.gl.linkProgram(program);
+                                this.gl.useProgram(program);
+
+                                const positionAttributeLocation = this.gl.getAttribLocation(program, 'aVertexPosition');
+                                const uColorLocation = this.gl.getUniformLocation(program, 'uColor');
+                                const uModelViewMatrixLocation = this.gl.getUniformLocation(program, 'uModelViewMatrix');
+                                const uProjectionMatrixLocation = this.gl.getUniformLocation(program, 'uProjectionMatrix');
+
+                                this.gl.uniform3f(uColorLocation, color.r, color.g, color.b);
+
+                                // Construct simplified model, view, and projection matrices
+                                // This would normally be handled by Three.js Matrix4
+                                const modelMatrix = new Float32Array([
+                                    1, 0, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 0, 1, 0,
+                                    object.position.x, object.position.y, object.position.z, 1
+                                ]);
+                                // Apply rotation (Euler to simplified rotation matrix)
+                                // Only X and Y for simplicity
+                                const cosX = Math.cos(object.rotation.x);
+                                const sinX = Math.sin(object.rotation.x);
+                                const cosY = Math.cos(object.rotation.y);
+                                const sinY = Math.sin(object.rotation.y);
+
+                                const rotationMatrix = new Float32Array([
+                                    cosY, 0, -sinY, 0,
+                                    sinX * sinY, cosX, sinX * cosY, 0,
+                                    cosX * sinY, -sinX, cosX * cosY, 0,
+                                    0, 0, 0, 1
+                                ]);
+
+                                // Manual multiplication for model matrix (identity * rotation * translation)
+                                // In a real 3D engine, this is handled by Matrix4.multiply()
+                                const finalModelMatrix = new Float32Array(16);
+                                for (let i = 0; i < 4; i++) {
+                                    for (let j = 0; j < 4; j++) {
+                                        finalModelMatrix[i * 4 + j] = 0;
+                                        for (let k = 0; k < 4; k++) {
+                                            finalModelMatrix[i * 4 + j] += rotationMatrix[i * 4 + k] * modelMatrix[k * 4 + j];
+                                        }
+                                    }
+                                }
+
+                                const viewMatrix = new Float32Array([
+                                    1, 0, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 0, 1, 0,
+                                    -camera.position.x, -camera.position.y, -camera.position.z, 1
+                                ]);
+
+                                const modelViewMatrix = new Float32Array(16);
+                                for (let i = 0; i < 4; i++) {
+                                    for (let j = 0; j < 4; j++) {
+                                        modelViewMatrix[i * 4 + j] = 0;
+                                        for (let k = 0; k < 4; k++) {
+                                            modelViewMatrix[i * 4 + j] += viewMatrix[i * 4 + k] * finalModelMatrix[k * 4 + j];
+                                        }
+                                    }
+                                }
+
+                                this.gl.uniformMatrix4fv(uModelViewMatrixLocation, false, modelViewMatrix);
+                                this.gl.uniformMatrix4fv(uProjectionMatrixLocation, false, camera.projectionMatrix);
+
+                                // Define cube vertices and indices (hardcoded for simplicity)
+                                // This data would normally come from geometry.attributes
+                                const vertices = new Float32Array([
+                                    // Front face
+                                    -0.5, -0.5,  0.5,
+                                     0.5, -0.5,  0.5,
+                                     0.5,  0.5,  0.5,
+                                    -0.5,  0.5,  0.5,
+
+                                    // Back face
+                                    -0.5, -0.5, -0.5,
+                                    -0.5,  0.5, -0.5,
+                                     0.5,  0.5, -0.5,
+                                     0.5, -0.5, -0.5,
+
+                                    // Top face
+                                    -0.5,  0.5, -0.5,
+                                    -0.5,  0.5,  0.5,
+                                     0.5,  0.5,  0.5,
+                                     0.5,  0.5, -0.5,
+
+                                    // Bottom face
+                                    -0.5, -0.5, -0.5,
+                                     0.5, -0.5, -0.5,
+                                     0.5, -0.5,  0.5,
+                                    -0.5, -0.5,  0.5,
+
+                                    // Right face
+                                     0.5, -0.5, -0.5,
+                                     0.5,  0.5, -0.5,
+                                     0.5,  0.5,  0.5,
+                                     0.5, -0.5,  0.5,
+
+                                    // Left face
+                                    -0.5, -0.5, -0.5,
+                                    -0.5, -0.5,  0.5,
+                                    -0.5,  0.5,  0.5,
+                                    -0.5,  0.5, -0.5
+                                ]);
+
+                                const indices = new Uint16Array([
+                                     0,  1,  2,      0,  2,  3,    // front
+                                     4,  5,  6,      4,  6,  7,    // back
+                                     8,  9, 10,      8, 10, 11,    // top
+                                    12, 13, 14,     12, 14, 15,    // bottom
+                                    16, 17, 18,     16, 18, 19,    // right
+                                    20, 21, 22,     20, 22, 23     // left
+                                ]);
+
+                                const positionBuffer = this.gl.createBuffer();
+                                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);
+                                this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
+                                this.gl.vertexAttribPointer(positionAttributeLocation, 3, this.gl.FLOAT, false, 0, 0);
+                                this.gl.enableVertexAttribArray(positionAttributeLocation);
+
+                                const indexBuffer = this.gl.createBuffer();
+                                this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                                this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, indices, this.gl.STATIC_DRAW);
+
+                                this.gl.drawElements(this.gl.TRIANGLES, indices.length, this.gl.UNSIGNED_SHORT, 0);
+
+                            } else if (object.isLight) {
+                                // In a real renderer, lights would contribute to shading.
+                                // For this basic hardcoded WebGL example, lights are not fully implemented.
+                            }
+                        });
+                    };
+                }
+
+                setSize( width, height ) {
+                    this.width = width;
+                    this.height = height;
+                    this.domElement.width = width * this.pixelRatio;
+                    this.domElement.height = height * this.pixelRatio;
+                    this.domElement.style.width = width + 'px';
+                    this.domElement.style.height = height + 'px';
+                    this.gl.viewport( 0, 0, this.domElement.width, this.domElement.height );
+                }
+
+                setPixelRatio( value ) {
+                    this.pixelRatio = value;
+                    this.setSize(this.width, this.height); // Recalculate size with new pixel ratio
+                }
+            }
+
+            // Public API of the embedded Three.js like object
+            return {
+                Scene: Scene,
+                PerspectiveCamera: PerspectiveCamera,
+                BoxGeometry: BoxGeometry,
+                MeshPhongMaterial: MeshPhongMaterial,
+                AmbientLight: AmbientLight,
+                DirectionalLight: DirectionalLight,
+                Mesh: Mesh,
+                WebGLRenderer: WebGLRenderer,
+                Color: Color,
+                Math: {
+                    generateUUID: function() { // Simplified UUID
+                        let dt = new Date().getTime();
+                        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                            const r = (dt + Math.random() * 16) % 16 | 0;
+                            dt = Math.floor(dt / 16);
+                            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                        });
+                    }
+                }
+            };
+        })();
+
+        let scene, renderer, camera;
+        let cube;
+        let animationFrameId;
+
+        // DOM elements
+        const threeJsCanvas = document.getElementById('threeJsCanvas');
+        const resetViewBtn = document.getElementById('resetViewBtn');
+        const outputLog = document.getElementById('outputLog');
+        const rotationXValueSpan = document.getElementById('rotationXValue');
+        const rotationYValueSpan = document.getElementById('rotationYValue');
+        const rotationZValueSpan = document.getElementById('rotationZValue');
+
+        let isDragging = false;
+        let previousMouseX = 0;
+        let previousMouseY = 0;
+        const rotationSpeed = 0.005; // Adjust sensitivity
+
+        /**
+         * Logs a message to the output log.
+         * @param {string} message - The message to log.
+         * @param {string} color - The color of the text (e.g., 'blue', 'green').
+         */
+        function logMessage(message, color = 'black') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = color;
+            outputLog.appendChild(p);
+            outputLog.scrollTop = outputLog.scrollHeight; // Auto-scroll to bottom
+        }
+
+        /**
+         * Initializes the 3D scene, renderer, and objects.
+         */
+        function init() {
+            logMessage('Menginisialisasi scene 3D...', 'gray');
+
+            // Scene: Container for all 3D objects, lights, and cameras
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f8ff); // Light blue background
+
+            // Camera: Defines what is visible in the scene and from what perspective
+            // Parameters: FOV (Field of View), Aspect Ratio, Near Clipping Plane, Far Clipping Plane
+            camera = new THREE.PerspectiveCamera(75, threeJsCanvas.clientWidth / threeJsCanvas.clientHeight, 0.1, 1000);
+            camera.position.z = 3; // Position the camera back to view the cube
+
+            // Renderer: Renders the scene onto the canvas
+            renderer = new THREE.WebGLRenderer({ canvas: threeJsCanvas, antialias: true });
+            renderer.setSize(threeJsCanvas.clientWidth, threeJsCanvas.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio); // Handle high-DPI screens for sharper rendering
+
+            // Lights: Essential for seeing material colors (since MeshBasicMaterial ignores lights)
+            // AmbientLight: Illuminates all objects in the scene equally from all directions.
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
+            scene.add(ambientLight);
+            // DirectionalLight: Simulates light from a distant source (like the sun)
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(1, 1, 1); // Light coming from top-front-right (normalization is handled internally by some renderers)
+            scene.add(directionalLight);
+
+            // Create a Cube (a basic 3D primitive as mentioned in PDF)
+            // BoxGeometry(width, height, depth)
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            // MeshPhongMaterial: A material for shiny surfaces with specular highlights.
+            const material = new THREE.MeshPhongMaterial({ color: 0x0088ff, flatShading: true }); // Bright blue, flat shaded for distinct faces
+            cube = new THREE.Mesh(geometry, material); // Combine geometry and material to create the mesh
+            scene.add(cube); // Add the cube to the scene
+
+            logMessage('Scene 3D berhasil diinisialisasi dengan kubus.', 'blue');
+        }
+
+        /**
+         * Handles window resize to keep canvas and camera responsive.
+         * This is crucial for adapting to different screen sizes, especially mobile.
+         */
+        function onWindowResize() {
+            const width = threeJsCanvas.clientWidth;
+            const height = threeJsCanvas.clientHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height; // Update aspect ratio
+            camera.updateProjectionMatrix(); // Recalculate projection matrix
+            renderer.render(scene, camera); // Re-render the scene
+        }
+
+        /**
+         * Animation loop. This function is called repeatedly to render frames.
+         */
+        function animate() {
+            animationFrameId = requestAnimationFrame(animate); // Request the next frame
+            renderer.render(scene, camera); // Render the scene from the camera's perspective
+            updateRotationDisplay(); // Update rotation values in UI
+        }
+
+        /**
+         * Resets the cube's rotation to initial state.
+         */
+        function resetRotation() {
+            logMessage('Mengatur ulang rotasi kubus...', 'orange');
+            cube.rotation.set(0, 0, 0); // Set all rotations to zero
+            updateRotationDisplay();
+            logMessage('Rotasi kubus telah diatur ulang.', 'green');
+        }
+
+        /**
+         * Updates the display of current cube rotation values.
+         */
+        function updateRotationDisplay() {
+            if (cube) {
+                rotationXValueSpan.textContent = cube.rotation.x.toFixed(2);
+                rotationYValueSpan.textContent = cube.rotation.y.toFixed(2);
+                rotationZValueSpan.textContent = cube.rotation.z.toFixed(2);
+            }
+        }
+
+        // --- Mouse Interaction for Object Rotation ---
+        /**
+         * Handles mouse down event to start dragging.
+         * @param {MouseEvent} event
+         */
+        function onMouseDown(event) {
+            isDragging = true;
+            previousMouseX = event.clientX;
+            previousMouseY = event.clientY;
+            threeJsCanvas.style.cursor = 'grabbing'; // Change cursor to indicate dragging
+        }
+
+        /**
+         * Handles mouse move event to rotate the cube.
+         * @param {MouseEvent} event
+         */
+        function onMouseMove(event) {
+            if (!isDragging) return;
+
+            const deltaX = event.clientX - previousMouseX;
+            const deltaY = event.clientY - previousMouseY;
+
+            // Rotate around Y-axis for horizontal mouse movement
+            cube.rotation.y += deltaX * rotationSpeed;
+            // Rotate around X-axis for vertical mouse movement
+            cube.rotation.x += deltaY * rotationSpeed;
+
+            previousMouseX = event.clientX;
+            previousMouseY = event.clientY;
+        }
+
+        /**
+         * Handles mouse up event to stop dragging.
+         */
+        function onMouseUp() {
+            isDragging = false;
+            threeJsCanvas.style.cursor = 'grab'; // Change cursor back
+        }
+
+        // --- Touch Interaction for Object Rotation ---
+        /**
+         * Handles touch start event to initiate dragging.
+         * @param {TouchEvent} event
+         */
+        function onTouchStart(event) {
+            if (event.touches.length === 1) { // Only consider single touch for rotation
+                isDragging = true;
+                previousMouseX = event.touches[0].clientX;
+                previousMouseY = event.touches[0].clientY;
+            }
+        }
+
+        /**
+         * Handles touch move event to rotate the cube.
+         * @param {TouchEvent} event
+         */
+        function onTouchMove(event) {
+            if (!isDragging || event.touches.length !== 1) return;
+
+            const deltaX = event.touches[0].clientX - previousMouseX;
+            const deltaY = event.touches[0].clientY - previousMouseY;
+
+            cube.rotation.y += deltaX * rotationSpeed;
+            cube.rotation.x += deltaY * rotationSpeed;
+
+            previousMouseX = event.touches[0].clientX;
+            previousMouseY = event.touches[0].clientY;
+            event.preventDefault(); // Prevent scrolling on touch move
+        }
+
+        /**
+         * Handles touch end event to stop dragging.
+         */
+        function onTouchEnd() {
+            isDragging = false;
+        }
+
+        // Event Listeners
+        // Ensure everything is loaded before initializing 3D scene
+        window.addEventListener('load', () => {
+            init();
+            animate(); // Start the animation loop
+            onWindowResize(); // Adjust initial canvas size based on CSS
+        });
+        window.addEventListener('resize', onWindowResize); // Handle window resizing
+
+        resetViewBtn.addEventListener('click', resetRotation);
+
+        // Mouse events for camera control
+        threeJsCanvas.addEventListener('mousedown', onMouseDown);
+        threeJsCanvas.addEventListener('mousemove', onMouseMove);
+        threeJsCanvas.addEventListener('mouseup', onMouseUp);
+        threeJsCanvas.addEventListener('mouseout', onMouseUp); // Release drag if mouse leaves canvas
+
+        // Touch events for camera control
+        threeJsCanvas.addEventListener('touchstart', onTouchStart);
+        threeJsCanvas.addEventListener('touchmove', onTouchMove);
+        threeJsCanvas.addEventListener('touchend', onTouchEnd);
+    </script>
+</body>
+</html>

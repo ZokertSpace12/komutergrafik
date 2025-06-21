@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi Proyeksi 3D</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* Base styles adapted from Tailwind's preflight and common utilities */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb; /* gray-200 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            line-height: inherit;
+            background-color: #fce7f3; /* bg-pink-100 */
+            padding: 1rem; /* p-4 */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Custom font for a clean look */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Style for canvas border */
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f0f8ff; /* Light blue background for 3D scene */
+            display: block; /* Remove extra space below canvas */
+            width: 100%; /* w-full */
+            height: auto; /* h-auto */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+
+        /* Custom styling for button effects */
+        button {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 0.5rem; /* rounded-lg */
+            padding-top: 0.5rem; /* py-2 */
+            padding-bottom: 0.5rem;
+            padding-left: 1rem; /* px-4 */
+            padding-right: 1rem;
+            font-weight: 700; /* font-bold */
+            color: #fff; /* text-white */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            display: block; /* w-full equivalent */
+            width: 100%; /* added for w-full equivalent */
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        /* Container styling */
+        .max-w-4xl {
+            max-width: 56rem; /* Equivalent to 896px, common for max-w-4xl */
+        }
+        .w-full {
+            width: 100%;
+        }
+        .bg-white {
+            background-color: #fff;
+        }
+        .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .rounded-lg {
+            border-radius: 0.5rem;
+        }
+        .p-6 {
+            padding: 1.5rem;
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:p-8 {
+                padding: 2rem;
+            }
+        }
+        .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 2rem;
+            margin-bottom: 0;
+        }
+
+        /* Heading styles */
+        .text-3xl {
+            font-size: 1.875rem; /* 30px */
+            line-height: 2.25rem; /* 36px */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:text-4xl {
+                font-size: 2.25rem; /* 36px */
+                line-height: 2.5rem; /* 40px */
+            }
+        }
+        .font-extrabold {
+            font-weight: 800;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-gray-800 {
+            color: #1f2937;
+        }
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Grid layout */
+        .grid {
+            display: grid;
+        }
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .gap-6 {
+            gap: 1.5rem;
+        }
+
+        /* Section styling (Input and Canvas) */
+        .border {
+            border-width: 1px;
+        }
+        .border-blue-200 {
+            border-color: #bfdbfe;
+        }
+        .rounded-xl {
+            border-radius: 0.75rem;
+        }
+        .p-4 {
+            padding: 1rem;
+        }
+        .bg-blue-50 {
+            background-color: #eff6ff;
+        }
+        .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .text-2xl {
+            font-size: 1.5rem; /* 24px */
+            line-height: 2rem; /* 32px */
+        }
+        .font-bold {
+            font-weight: 700;
+        }
+        .text-blue-700 {
+            color: #1d4ed8;
+        }
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+        .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 1.5rem;
+            margin-bottom: 0;
+        }
+        .block {
+            display: block;
+        }
+        .text-gray-700 {
+            color: #374151;
+        }
+        .font-medium {
+            font-weight: 500;
+        }
+        .mb-1 {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Select and Input Range styling */
+        select {
+            display: block;
+            width: 100%; /* w-full */
+            padding: 0.5rem; /* p-2 */
+            border-width: 1px;
+            border-color: #d1d5db; /* border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            /* Focus styles: mimic Tailwind's focus:ring and focus:border */
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            box-shadow: none;
+            transition: all 0.15s ease-in-out;
+            -webkit-appearance: none; /* Remove default browser styling for select */
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3e%3cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e"); /* Custom arrow */
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.5em;
+        }
+        select:focus {
+            border-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* Simulating focus:ring-blue-500 */
+        }
+
+        .space-y-2 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+        }
+        .hidden {
+            display: none;
+        }
+        .text-xl {
+            font-size: 1.25rem; /* 20px */
+            line-height: 1.75rem; /* 28px */
+        }
+        .font-semibold {
+            font-weight: 600;
+        }
+        .text-blue-600 {
+            color: #2563eb;
+        }
+
+        input[type="range"] {
+            width: 100%; /* w-full */
+            height: 0.5rem; /* h-2 */
+            border-radius: 0.5rem; /* rounded-lg */
+            -webkit-appearance: none; /* Remove default styling */
+            appearance: none;
+            cursor: pointer;
+            outline: none;
+            transition: background 0.3s ease;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 0.5rem;
+            background: #93c5fd; /* bg-blue-300 */
+            border-radius: 0.5rem;
+        }
+        input[type="range"]::-moz-range-track {
+            height: 0.5rem;
+            background: #93c5fd; /* bg-blue-300 */
+            border-radius: 0.5rem;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 1rem; /* Adjust thumb size */
+            width: 1rem;
+            border-radius: 50%;
+            background: #3b82f6; /* blue-500 */
+            margin-top: -0.25rem; /* Center thumb vertically */
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); /* Add subtle shadow/ring */
+        }
+        input[type="range"]::-moz-range-thumb {
+            height: 1rem;
+            width: 1rem;
+            border-radius: 50%;
+            background: #3b82f6; /* blue-500 */
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+        input[type="range"].bg-gray-300::-webkit-slider-runnable-track {
+            background: #d1d5db; /* gray-300 */
+        }
+        input[type="range"].bg-gray-300::-moz-range-track {
+            background: #d1d5db; /* gray-300 */
+        }
+
+
+        .flex-col {
+            flex-direction: column;
+        }
+        .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0.75rem;
+            margin-bottom: 0;
+        }
+        .pt-4 {
+            padding-top: 1rem;
+        }
+
+        .bg-gray-600 {
+            background-color: #4b5563;
+        }
+        .hover\:bg-gray-700:hover {
+            background-color: #374151;
+        }
+
+        /* Canvas & Output Section Styling */
+        .items-center {
+            align-items: center;
+        }
+        .justify-center {
+            justify-content: center;
+        }
+        .border-gray-300 {
+            border-color: #d1d5db;
+        }
+        .bg-gray-50 {
+            background-color: #f9fafb;
+        }
+        .text-gray-600 {
+            color: #4b5563;
+        }
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+        .text-sm {
+            font-size: 0.875rem; /* 14px */
+            line-height: 1.25rem; /* 20px */
+        }
+        .mt-4 {
+            margin-top: 1rem;
+        }
+        .p-3 {
+            padding: 0.75rem;
+        }
+        .bg-gray-100 {
+            background-color: #f3f4f6;
+        }
+        .border-gray-200 {
+            border-color: #e5e7eb;
+        }
+        .text-gray-700 {
+            color: #374151;
+        }
+        .overflow-auto {
+            overflow: auto;
+        }
+        .h-24 {
+            height: 6rem; /* 96px */
+        }
+    </style>
+</head>
+<body class="bg-pink-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="max-w-4xl w-full bg-white shadow-lg rounded-lg p-6 md:p-8 space-y-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6">
+            Visualisasi Proyeksi 3D (Paralel vs Perspektif)
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-6 border border-blue-200 rounded-xl p-4 bg-blue-50 shadow-md">
+                <h2 class="text-2xl font-bold text-blue-700 mb-4">Pengaturan Proyeksi</h2>
+
+                <div>
+                    <label for="projectionType" class="block text-gray-700 font-medium mb-1">Tipe Proyeksi:</label>
+                    <select id="projectionType" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        <option value="orthographic">Ortografi (Paralel)</option>
+                        <option value="perspective">Perspektif</option>
+                    </select>
+                </div>
+
+                <div id="perspectiveControls" class="space-y-2 hidden">
+                    <h3 class="text-xl font-semibold text-blue-600">Pengaturan Kamera Perspektif</h3>
+                    <div>
+                        <label for="fov" class="block text-gray-700 font-medium mb-1">FOV (Field of View): <span id="fovValue">75</span>&deg;</label>
+                        <input type="range" id="fov" min="1" max="120" value="75" class="w-full h-2 bg-blue-300 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div>
+                        <label for="cameraZ" class="block text-gray-700 font-medium mb-1">Posisi Kamera Z: <span id="cameraZValue">5</span></label>
+                        <input type="range" id="cameraZ" min="1" max="20" value="5" step="0.5" class="w-full h-2 bg-blue-300 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="text-xl font-semibold text-blue-600">Pengaturan Objek (Kubus)</h3>
+                    <div>
+                        <label for="objectX" class="block text-gray-700 font-medium mb-1">Posisi Objek X: <span id="objectXValue">0</span></label>
+                        <input type="range" id="objectX" min="-10" max="10" value="0" step="0.1" class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div>
+                        <label for="objectY" class="block text-gray-700 font-medium mb-1">Posisi Objek Y: <span id="objectYValue">0</span></label>
+                        <input type="range" id="objectY" min="-10" max="10" value="0" step="0.1" class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div>
+                        <label for="objectZ" class="block text-gray-700 font-medium mb-1">Posisi Objek Z: <span id="objectZValue">0</span></label>
+                        <input type="range" id="objectZ" min="-10" max="10" value="0" step="0.1" class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="flex flex-col space-y-3 pt-4">
+                    <button id="resetViewBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Reset Tampilan & Objek
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center justify-center border border-gray-300 rounded-xl p-4 bg-gray-50 shadow-md">
+                <canvas id="threeJsCanvas" width="400" height="400" class="w-full h-auto rounded-md"></canvas>
+                <p class="text-gray-600 mt-2 text-sm">Gunakan mouse untuk memutar kamera.</p>
+                <div id="outputLog" class="mt-4 p-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-700 overflow-auto h-24 w-full">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let scene, renderer, camera;
+        let cube;
+        let animationFrameId;
+
+        // DOM elements
+        const threeJsCanvas = document.getElementById('threeJsCanvas');
+        const projectionTypeSelect = document.getElementById('projectionType');
+        const perspectiveControlsDiv = document.getElementById('perspectiveControls');
+        const fovInput = document.getElementById('fov');
+        const fovValueSpan = document.getElementById('fovValue');
+        const cameraZInput = document.getElementById('cameraZ');
+        const cameraZValueSpan = document.getElementById('cameraZValue');
+        const objectXInput = document.getElementById('objectX');
+        const objectXValueSpan = document.getElementById('objectXValue');
+        const objectYInput = document.getElementById('objectY');
+        const objectYValueSpan = document.getElementById('objectYValue');
+        const objectZInput = document.getElementById('objectZ');
+        const objectZValueSpan = document.getElementById('objectZValue');
+        const resetViewBtn = document.getElementById('resetViewBtn');
+        const outputLog = document.getElementById('outputLog');
+
+        let isDragging = false;
+        let previousMouseX = 0;
+        let previousMouseY = 0;
+        let rotationSpeed = 0.005;
+
+        /**
+         * Logs a message to the output log.
+         * @param {string} message - The message to log.
+         * @param {string} color - The color of the text (e.g., 'blue', 'green').
+         */
+        function logMessage(message, color = 'black') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = color;
+            outputLog.appendChild(p);
+            outputLog.scrollTop = outputLog.scrollHeight; // Auto-scroll to bottom
+        }
+
+        /**
+         * Initializes the 3D scene, renderer, and objects.
+         */
+        function init() {
+            logMessage('Menginisialisasi scene 3D...', 'gray');
+
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f8ff); // Match canvas background
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ canvas: threeJsCanvas, antialias: true });
+            renderer.setSize(threeJsCanvas.clientWidth, threeJsCanvas.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio); // Handle high-DPI screens
+
+            // Initial Camera setup (will be updated by updateCameraType)
+            camera = new THREE.PerspectiveCamera(75, threeJsCanvas.clientWidth / threeJsCanvas.clientHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(0, 5, 5).normalize();
+            scene.add(directionalLight);
+
+            // Cube object
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshPhongMaterial({ color: 0x0088ff, flatShading: true }); // Blue color
+            cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+
+            logMessage('Scene 3D berhasil diinisialisasi.', 'blue');
+            updateCameraType(); // Set initial camera based on default selection
+            updateObjectPosition(); // Set initial object position
+        }
+
+        /**
+         * Updates the camera type (Orthographic or Perspective) based on selection.
+         */
+        function updateCameraType() {
+            const aspectRatio = threeJsCanvas.clientWidth / threeJsCanvas.clientHeight;
+            const currentProjectionType = projectionTypeSelect.value;
+
+            // Remove old camera
+            if (camera) {
+                scene.remove(camera);
+            }
+
+            if (currentProjectionType === 'orthographic') {
+                // Orthographic camera: left, right, top, bottom, near, far
+                const frustumSize = 5; // Controls the "zoom" level
+                camera = new THREE.OrthographicCamera(
+                    frustumSize * aspectRatio / -2,
+                    frustumSize * aspectRatio / 2,
+                    frustumSize / 2,
+                    frustumSize / -2,
+                    0.1,
+                    1000
+                );
+                camera.position.set(0, 0, 5); // Default position for orthographic view
+                perspectiveControlsDiv.classList.add('hidden'); // Hide perspective specific controls
+                logMessage('Menggunakan Proyeksi Ortografi.', 'green');
+            } else { // perspective
+                const fov = parseFloat(fovInput.value);
+                camera = new THREE.PerspectiveCamera(fov, aspectRatio, 0.1, 1000);
+                camera.position.z = parseFloat(cameraZInput.value); // Use user-defined Z
+                perspectiveControlsDiv.classList.remove('hidden'); // Show perspective specific controls
+                logMessage('Menggunakan Proyeksi Perspektif.', 'green');
+            }
+            scene.add(camera);
+            camera.lookAt(scene.position); // Look at the center of the scene
+            renderer.render(scene, camera); // Re-render after camera change
+        }
+
+        /**
+         * Updates the cube's position based on user input.
+         */
+        function updateObjectPosition() {
+            const x = parseFloat(objectXInput.value);
+            const y = parseFloat(objectYInput.value);
+            const z = parseFloat(objectZInput.value);
+
+            cube.position.set(x, y, z);
+            objectXValueSpan.textContent = x;
+            objectYValueSpan.textContent = y;
+            objectZValueSpan.textContent = z;
+
+            logMessage(`Posisi Kubus: (${x}, ${y}, ${z})`, 'gray');
+        }
+
+        /**
+         * Handles window resize to keep canvas and camera responsive.
+         */
+        function onWindowResize() {
+            const width = threeJsCanvas.clientWidth;
+            const height = threeJsCanvas.clientHeight;
+            renderer.setSize(width, height);
+
+            const aspectRatio = width / height;
+
+            if (camera.isOrthographicCamera) {
+                const frustumSize = 5;
+                camera.left = frustumSize * aspectRatio / -2;
+                camera.right = frustumSize * aspectRatio / 2;
+                camera.top = frustumSize / 2;
+                camera.bottom = frustumSize / -2;
+            } else if (camera.isPerspectiveCamera) {
+                camera.aspect = aspectRatio;
+            }
+            camera.updateProjectionMatrix();
+            renderer.render(scene, camera);
+        }
+
+        /**
+         * Animation loop.
+         */
+        function animate() {
+            animationFrameId = requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        /**
+         * Resets camera and object to default positions.
+         */
+        function resetView() {
+            logMessage('Mengatur ulang tampilan dan posisi objek...', 'orange');
+            // Reset inputs
+            projectionTypeSelect.value = 'orthographic';
+            fovInput.value = '75';
+            cameraZInput.value = '5';
+            objectXInput.value = '0';
+            objectYInput.value = '0';
+            objectZInput.value = '0';
+
+            // Update UI spans
+            fovValueSpan.textContent = fovInput.value;
+            cameraZValueSpan.textContent = cameraZInput.value;
+            objectXValueSpan.textContent = objectXInput.value;
+            objectYValueSpan.textContent = objectYInput.value;
+            objectZValueSpan.textContent = objectZInput.value;
+
+            // Apply changes to scene
+            updateCameraType();
+            updateObjectPosition();
+
+            // Reset cube rotation
+            cube.rotation.set(0, 0, 0);
+            camera.position.set(0, 0, parseFloat(cameraZInput.value)); // Reset camera Z as well
+            camera.lookAt(scene.position); // Ensure camera looks at origin after reset
+
+            logMessage('Tampilan dan posisi objek telah diatur ulang.', 'green');
+        }
+
+        // --- Mouse Interaction for Camera Rotation ---
+        function onMouseDown(event) {
+            isDragging = true;
+            previousMouseX = event.clientX;
+            previousMouseY = event.clientY;
+            threeJsCanvas.style.cursor = 'grabbing';
+        }
+
+        function onMouseMove(event) {
+            if (!isDragging) return;
+
+            const deltaX = event.clientX - previousMouseX;
+            const deltaY = event.clientY - previousMouseY;
+
+            // Rotate around Y-axis for horizontal mouse movement
+            cube.rotation.y += deltaX * rotationSpeed;
+            // Rotate around X-axis for vertical mouse movement (clamped to prevent flipping)
+            cube.rotation.x += deltaY * rotationSpeed;
+
+            previousMouseX = event.clientX;
+            previousMouseY = event.clientY;
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+            threeJsCanvas.style.cursor = 'grab';
+        }
+
+        // --- Touch Interaction for Camera Rotation ---
+        function onTouchStart(event) {
+            if (event.touches.length === 1) {
+                isDragging = true;
+                previousMouseX = event.touches[0].clientX;
+                previousMouseY = event.touches[0].clientY;
+            }
+        }
+
+        function onTouchMove(event) {
+            if (!isDragging || event.touches.length !== 1) return;
+
+            const deltaX = event.touches[0].clientX - previousMouseX;
+            const deltaY = event.touches[0].clientY - previousMouseY;
+
+            cube.rotation.y += deltaX * rotationSpeed;
+            cube.rotation.x += deltaY * rotationSpeed;
+
+            previousMouseX = event.touches[0].clientX;
+            previousMouseY = event.touches[0].clientY;
+            event.preventDefault(); // Prevent scrolling
+        }
+
+        function onTouchEnd() {
+            isDragging = false;
+        }
+
+        // Event Listeners
+        window.addEventListener('load', () => {
+            init();
+            animate();
+            onWindowResize(); // Set initial size correctly
+        });
+        window.addEventListener('resize', onWindowResize);
+
+        projectionTypeSelect.addEventListener('change', updateCameraType);
+        fovInput.addEventListener('input', () => {
+            fovValueSpan.textContent = fovInput.value;
+            if (camera.isPerspectiveCamera) {
+                camera.fov = parseFloat(fovInput.value);
+                camera.updateProjectionMatrix();
+            }
+        });
+        cameraZInput.addEventListener('input', () => {
+            cameraZValueSpan.textContent = cameraZInput.value;
+            if (camera.isPerspectiveCamera) {
+                camera.position.z = parseFloat(cameraZInput.value);
+                camera.lookAt(scene.position); // Ensure camera looks at origin after Z change
+            }
+        });
+        objectXInput.addEventListener('input', updateObjectPosition);
+        objectYInput.addEventListener('input', updateObjectPosition);
+        objectZInput.addEventListener('input', updateObjectPosition);
+        resetViewBtn.addEventListener('click', resetView);
+
+        // Mouse events for camera control
+        threeJsCanvas.addEventListener('mousedown', onMouseDown);
+        threeJsCanvas.addEventListener('mousemove', onMouseMove);
+        threeJsCanvas.addEventListener('mouseup', onMouseUp);
+        threeJsCanvas.addEventListener('mouseout', onMouseUp); // Release drag if mouse leaves canvas
+
+        // Touch events for camera control
+        threeJsCanvas.addEventListener('touchstart', onTouchStart);
+        threeJsCanvas.addEventListener('touchmove', onTouchMove);
+        threeJsCanvas.addEventListener('touchend', onTouchEnd);
+
+    </script>
+</body>
+</html>

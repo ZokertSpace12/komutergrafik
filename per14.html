@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Grafika Komputer Sederhana</title>
+    <style>
+        /* Custom font for a clean look */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fce4ec; /* bg-pink-100 */
+            padding: 1rem; /* p-4 */
+            min-height: 100vh; /* min-h-screen */
+            display: flex; /* flex */
+            align-items: center; /* items-center */
+            justify-content: center; /* justify-center */
+        }
+
+        .main-container { /* max-w-4xl w-full bg-white shadow-lg rounded-lg p-6 md:p-8 space-y-8 */
+            max-width: 64rem;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem; /* space-y-8 */
+        }
+
+        @media (min-width: 768px) { /* md:p-8 */
+            .main-container {
+                padding: 2rem;
+            }
+        }
+
+        h1 { /* text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6 */
+            font-size: 2.25rem;
+            line-height: 2.5rem;
+            font-weight: 800;
+            text-align: center;
+            color: #1a202c;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 768px) { /* md:text-4xl */
+            h1 {
+                font-size: 2.5rem;
+                line-height: 1;
+            }
+        }
+
+        .grid-layout { /* grid grid-cols-1 md:grid-cols-2 gap-6 */
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem; /* gap-6 */
+        }
+
+        @media (min-width: 768px) {
+            .grid-layout {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .controls-section { /* space-y-6 border border-blue-200 rounded-xl p-4 bg-blue-50 shadow-md */
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* space-y-6 */
+            border: 1px solid #bfdbfe;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            background-color: #eff6ff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        h2 { /* text-2xl font-bold text-blue-700 mb-4 */
+            font-size: 1.5rem;
+            line-height: 2rem;
+            font-weight: 700;
+            color: #1d4ed8;
+            margin-bottom: 1rem;
+        }
+
+        .info-group { /* space-y-2 */
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem; /* space-y-2 */
+        }
+
+        .info-group p { /* text-gray-700 */
+            color: #4a5568;
+        }
+
+        .info-group .status { /* font-semibold text-green-700 */
+            font-weight: 600;
+            color: #15803d; /* green-700 */
+        }
+
+        .info-group .status.stopped { /* text-red-700 */
+            color: #b91c1c; /* red-700 */
+        }
+
+        .info-group .animated-text { /* font-semibold text-blue-800 */
+            font-weight: 600;
+            color: #1e40af; /* blue-800 */
+        }
+
+        .info-group .special-label { /* font-semibold text-red-600 */
+            font-weight: 600;
+            color: #dc2626; /* red-600 */
+        }
+
+        .info-group .italic-text { /* text-gray-600 text-sm italic mt-4 */
+            color: #4b5563;
+            font-size: 0.875rem;
+            font-style: italic;
+            margin-top: 1rem; /* mt-4 */
+        }
+
+        .button-group { /* flex flex-col space-y-3 pt-4 */
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem; /* space-y-3 */
+            padding-top: 1rem; /* pt-4 */
+        }
+
+        button {
+            transition: all 0.3s ease;
+            width: 100%; /* w-full */
+            color: #ffffff; /* text-white */
+            font-weight: 700; /* font-bold */
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        #toggleAnimationBtn { /* bg-indigo-600 hover:bg-indigo-700 */
+            background-color: #4f46e5;
+        }
+        #toggleAnimationBtn:hover {
+            background-color: #4338ca;
+        }
+
+        #resetCanvasBtn { /* bg-gray-600 hover:bg-gray-700 */
+            background-color: #4b5563;
+        }
+        #resetCanvasBtn:hover {
+            background-color: #374151;
+        }
+
+        .canvas-section { /* flex flex-col items-center justify-center border border-gray-300 rounded-xl p-4 bg-gray-50 shadow-md */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            background-color: #f9fafb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #000; /* Black background as in Java example */
+            width: 100%; /* w-full */
+            height: auto; /* h-auto */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+
+        .canvas-caption { /* text-gray-600 mt-2 text-sm */
+            color: #4b5563;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        #outputLog { /* mt-4 p-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-700 overflow-auto h-24 w-full */
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            color: #374151;
+            overflow: auto;
+            height: 6rem; /* h-24 */
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-pink-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="main-container">
+        <h1>Aplikasi Grafika Komputer</h1>
+
+        <div class="grid-layout">
+            <div class="controls-section">
+                <h2>Pengaturan Aplikasi</h2>
+
+                <div class="info-group">
+                    <p>Status Animasi: <span id="animationStatus" class="status">Berjalan</span></p>
+                    <p>Teks Animasi: <span id="animatedTextDisplay" class="animated-text">DWI SUTIKNO</span></p>
+                    <p>Label Khusus: <span class="special-label">UAS</span></p>
+                    <p class="italic-text">"Mahasiswa mampu membuat aplikasi grafika komputer." - Pertemuan 14, Hal. 164</p>
+                </div>
+
+                <div class="button-group">
+                    <button id="toggleAnimationBtn">
+                        Toggle Animasi
+                    </button>
+                    <button id="resetCanvasBtn">
+                        Reset Kanvas
+                    </button>
+                </div>
+            </div>
+
+            <div class="canvas-section">
+                <canvas id="graphicsCanvas" width="500" height="300"></canvas>
+                <p class="canvas-caption">Animasi dan objek akan ditampilkan di sini.</p>
+                <div id="outputLog">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphicsCanvas');
+        const ctx = canvas.getContext('2d');
+        const outputLog = document.getElementById('outputLog');
+        const toggleAnimationBtn = document.getElementById('toggleAnimationBtn');
+        const resetCanvasBtn = document.getElementById('resetCanvasBtn');
+        const animationStatusSpan = document.getElementById('animationStatus');
+
+        // Animation variables (adapted from Java example)
+        let xOrang = -100; // x-coordinate for the stick figure
+        let v = 1;         // Animation state (1 or 2 for different poses)
+        let animationInterval; // Stores the interval ID for animation loop
+
+        // Text animation variables
+        let textXOffset = 0;
+        let textYOffset = 0;
+        let currentAlpha = 255;
+        let alphaDirection = -1; // -1 for decreasing, 1 for increasing
+
+        // Constants
+        const ANIMATION_SPEED = 150; // Milliseconds per frame for stick figure
+        const MAX_ALPHA = 240;
+        const MIN_ALPHA = 15;
+        const DEFAULT_TEXT = "DWI SUTIKNO";
+        const UAS_LABEL_TEXT = "UAS";
+
+        /**
+         * Logs a message to the output log.
+         * @param {string} message - The message to log.
+         * @param {string} color - The color of the text.
+         */
+        function logMessage(message, color = 'black') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = color;
+            outputLog.appendChild(p);
+            outputLog.scrollTop = outputLog.scrollHeight; // Auto-scroll to bottom
+        }
+
+        /**
+         * Draws the animated text.
+         * @param {CanvasRenderingContext2D} g2 - The 2D rendering context.
+         */
+        function drawText(g2) {
+            g2.font = "bold 35px 'Comic Sans MS'"; // Font as in Java example
+            
+            // Random color logic adapted to JavaScript canvas
+            const r = Math.floor(Math.random() * 250);
+            const g = Math.floor(Math.random() * 250);
+            const b = Math.floor(Math.random() * 250);
+            
+            // Convert currentAlpha to a 0-1 range for rgba
+            const alpha = currentAlpha / 255; 
+            g2.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+
+            g2.fillText(DEFAULT_TEXT, 20 + textXOffset, 50 + textYOffset);
+        }
+
+        /**
+         * Draws the stick figure animation.
+         * @param {CanvasRenderingContext2D} g2 - The 2D rendering context.
+         * @param {number} x - X position of the figure.
+         * @param {number} y - Y position of the figure.
+         * @param {number} v - Animation pose state (1 or 2).
+         */
+        function drawOrang(g2, x, y, v) {
+            g2.lineCap = 'round';
+            g2.lineJoin = 'round';
+            g2.lineWidth = 6;
+            g2.strokeStyle = 'white'; // Stroke color for lines
+            g2.fillStyle = 'white'; // Fill color for head
+
+            // Head
+            g2.beginPath();
+            if (v === 1) {
+                g2.arc(x + 38 + 10, y + 10 + 10, 10, 0, Math.PI * 2); // kepala (x+38, y+10, 20, 20) -> radius 10, center x+48, y+20
+            } else { // v === 2
+                g2.arc(x + 42 + 10, y + 10 + 10, 10, 0, Math.PI * 2); // kepala1 (x+42, y+10, 20, 20) -> radius 10, center x+52, y+20
+            }
+            g2.fill();
+            g2.stroke();
+
+            // Body and Limbs (simplified from GeneralPath to basic lines)
+            g2.beginPath();
+            if (v === 1) {
+                // Body
+                g2.moveTo(x + 46, y + 32);
+                g2.lineTo(x + 46, y + 69);
+                g2.lineTo(x + 46, y + 93);
+
+                // Arms
+                g2.moveTo(x + 46, y + 32); // Right arm
+                g2.lineTo(x + 54, y + 55);
+                g2.lineTo(x + 71, y + 72);
+
+                g2.moveTo(x + 46, y + 32); // Left arm
+                g2.lineTo(x + 34, y + 52);
+                g2.lineTo(x + 27, y + 73);
+
+                // Legs
+                g2.moveTo(x + 46, y + 93); // Right leg
+                g2.lineTo(x + 59, y + 93);
+                g2.lineTo(x + 66, y + 118);
+
+                g2.moveTo(x + 46, y + 93); // Left leg
+                g2.lineTo(x + 26, y + 112);
+
+            } else { // v === 2
+                // Body
+                g2.moveTo(x + 46, y + 29);
+                g2.lineTo(x + 46, y + 68);
+                g2.lineTo(x + 52, y + 90);
+
+                // Arms
+                g2.moveTo(x + 46, y + 29); // Right arm
+                g2.lineTo(x + 49, y + 58);
+                g2.lineTo(x + 51, y + 74);
+
+                g2.moveTo(x + 46, y + 29); // Left arm
+                g2.lineTo(x + 40, y + 48);
+                g2.lineTo(x + 40, y + 77);
+
+                // Legs
+                g2.moveTo(x + 52, y + 90); // Right leg
+                g2.lineTo(x + 60, y + 92);
+                g2.lineTo(x + 38, y + 106); 
+
+                g2.moveTo(x + 52, y + 90); // Left leg
+                g2.lineTo(x + 46, y + 120);
+            }
+            g2.stroke();
+        }
+
+        /**
+         * Draws the custom polygon for the "UAS" section.
+         * @param {CanvasRenderingContext2D} g2 - The 2D rendering context.
+         */
+        function drawUASPolygon(g2) {
+            g2.fillStyle = 'yellow'; // Fill color as in Java example
+            g2.strokeStyle = 'black';
+            g2.lineWidth = 1;
+
+            g2.beginPath();
+            g2.moveTo(10, 10);
+            g2.lineTo(200, 10);
+            g2.lineTo(200, 110);
+            g2.lineTo(30, 110);
+            g2.lineTo(10, 125);
+            g2.lineTo(20, 110);
+            g2.lineTo(10, 110); 
+            g2.closePath(); // Ensure path is closed
+
+            g2.fill();
+            g2.stroke();
+
+            // Draw "Komputer Grafik 1" text - adapted to "UAS" for the prompt
+            g2.fillStyle = 'black';
+            g2.font = "16px Arial"; // Adjust font size for better fit
+            g2.fillText(UAS_LABEL_TEXT, 50, 50); // Position text inside the polygon
+            logMessage('Poligon UAS digambar.', 'blue');
+        }
+
+        /**
+         * Main drawing function.
+         */
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear entire canvas
+
+            drawText(ctx);
+            drawOrang(ctx, xOrang, 100, v); // yOrang fixed at 100 as per Java example
+            drawUASPolygon(ctx);
+        }
+
+        /**
+         * Updates animation variables.
+         */
+        function updateAnimationState() {
+            // Update stick figure position
+            if (xOrang < canvas.width + 50) { // Allow it to go slightly off screen
+                xOrang = xOrang + 10;
+                v = (v === 1) ? 2 : 1; // Toggle pose
+            } else {
+                xOrang = -100; // Reset position to start from left
+            }
+
+            // Update text color transparency
+            if (currentAlpha <= MIN_ALPHA || currentAlpha >= MAX_ALPHA) {
+                alphaDirection *= -1; // Reverse direction
+            }
+            currentAlpha += alphaDirection * 15; // Change alpha by 15 steps
+
+            // Update random text offset (similar to Math.random()*10)
+            textXOffset = Math.floor(Math.random() * 10);
+            textYOffset = Math.floor(Math.random() * 10);
+        }
+
+        /**
+         * Starts the animation loop.
+         */
+        function startAnimation() {
+            if (!animationInterval) {
+                animationInterval = setInterval(() => {
+                    updateAnimationState();
+                    drawScene(); // Redraw every frame
+                }, ANIMATION_SPEED); // Use ANIMATION_SPEED for the main animation loop
+
+                animationStatusSpan.textContent = 'Berjalan';
+                animationStatusSpan.classList.remove('status-stopped');
+                animationStatusSpan.classList.add('status');
+                logMessage('Animasi dimulai.', 'green');
+            }
+        }
+
+        /**
+         * Stops the animation loop.
+         */
+        function stopAnimation() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+                animationStatusSpan.textContent = 'Berhenti';
+                animationStatusSpan.classList.remove('status');
+                animationStatusSpan.classList.add('status-stopped');
+                logMessage('Animasi dihentikan.', 'red');
+            }
+        }
+
+        /**
+         * Toggles animation on/off.
+         */
+        function toggleAnimation() {
+            if (animationInterval) {
+                stopAnimation();
+            } else {
+                startAnimation();
+            }
+        }
+
+        /**
+         * Resets the canvas and animation state.
+         */
+        function resetApplication() {
+            stopAnimation(); // Stop animation first
+            xOrang = -100;
+            v = 1;
+            currentAlpha = 255;
+            alphaDirection = -1;
+            textXOffset = 0;
+            textYOffset = 0;
+            drawScene(); // Draw initial state
+            logMessage('Aplikasi direset.', 'orange');
+            startAnimation(); // Restart animation after reset
+        }
+
+        // Event Listeners
+        toggleAnimationBtn.addEventListener('click', toggleAnimation);
+        resetCanvasBtn.addEventListener('click', resetApplication);
+
+        // Initial setup on load
+        window.onload = function() {
+            drawScene(); // Initial draw
+            startAnimation(); // Start animation automatically on load
+            logMessage('Aplikasi siap. Animasi dimulai secara otomatis.');
+        };
+    </script>
+</body>
+</html>

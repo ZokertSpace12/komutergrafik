@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Transformasi 2D (Translasi & Rotasi)</title>
+    <style>
+        /* Base styles adapted from Tailwind's preflight and common utilities */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb; /* gray-200 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            line-height: inherit;
+            background-color: #fce7f3; /* bg-pink-100 */
+            padding: 1rem; /* p-4 */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Custom font for a clean look */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Style for canvas border */
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            display: block; /* Remove extra space below canvas */
+            width: 100%; /* w-full */
+            height: auto; /* h-auto */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+
+        /* Custom styling for button effects */
+        button {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 0.5rem; /* rounded-lg */
+            padding-top: 0.5rem; /* py-2 */
+            padding-bottom: 0.5rem;
+            padding-left: 1rem; /* px-4 */
+            padding-right: 1rem;
+            font-weight: 700; /* font-bold */
+            color: #fff; /* text-white */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            display: block; /* w-full equivalent */
+            width: 100%; /* added for w-full equivalent */
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        /* Input group styling */
+        .input-group label {
+            display: block;
+            margin-bottom: 0.25rem; /* 4px */
+            font-weight: 500;
+            color: #4a5568; /* gray-700 */
+        }
+        .input-group input[type="number"] {
+            width: 100%;
+            padding: 0.5rem; /* 8px */
+            border: 1px solid #cbd5e0; /* gray-300 */
+            border-radius: 0.375rem; /* 6px */
+            font-size: 0.9rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* subtle shadow for inputs */
+            outline: none; /* remove default outline */
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .input-group input[type="number"]:focus {
+            border-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); /* focus ring effect */
+        }
+
+
+        /* Container styling */
+        .max-w-5xl {
+            max-width: 64rem; /* Equivalent to 1024px, common for max-w-5xl */
+        }
+        .w-full {
+            width: 100%;
+        }
+        .bg-white {
+            background-color: #fff;
+        }
+        .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .rounded-lg {
+            border-radius: 0.5rem;
+        }
+        .p-6 {
+            padding: 1.5rem;
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:p-8 {
+                padding: 2rem;
+            }
+        }
+        .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 2rem;
+            margin-bottom: 0;
+        }
+
+        /* Heading styles */
+        .text-3xl {
+            font-size: 1.875rem; /* 30px */
+            line-height: 2.25rem; /* 36px */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:text-4xl {
+                font-size: 2.25rem; /* 36px */
+                line-height: 2.5rem; /* 40px */
+            }
+        }
+        .font-extrabold {
+            font-weight: 800;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-gray-800 {
+            color: #1f2937;
+        }
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Grid layout */
+        .grid {
+            display: grid;
+        }
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .gap-6 {
+            gap: 1.5rem;
+        }
+
+        /* Section styling (Input and Canvas) */
+        .border {
+            border-width: 1px;
+        }
+        .border-blue-200 {
+            border-color: #bfdbfe;
+        }
+        .rounded-xl {
+            border-radius: 0.75rem;
+        }
+        .p-4 {
+            padding: 1rem;
+        }
+        .bg-blue-50 {
+            background-color: #eff6ff;
+        }
+        .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .text-2xl {
+            font-size: 1.5rem; /* 24px */
+            line-height: 2rem; /* 32px */
+        }
+        .font-bold {
+            font-weight: 700;
+        }
+        .text-blue-700 {
+            color: #1d4ed8;
+        }
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+        .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 1.5rem;
+            margin-bottom: 0;
+        }
+        .space-y-2 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+        }
+        .text-xl {
+            font-size: 1.25rem; /* 20px */
+            line-height: 1.75rem; /* 28px */
+        }
+        .font-semibold {
+            font-weight: 600;
+        }
+        .text-blue-600 {
+            color: #2563eb;
+        }
+
+        /* Specific grid for points */
+        .grid-cols-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        .gap-2 {
+            gap: 0.5rem;
+        }
+        .items-end {
+            align-items: flex-end;
+        }
+        .text-sm {
+            font-size: 0.875rem; /* 14px */
+            line-height: 1.25rem; /* 20px */
+        }
+
+        /* Buttons for points reset */
+        .bg-gray-400 {
+            background-color: #9ca3af;
+        }
+        .hover\:bg-gray-500:hover {
+            background-color: #6b7280;
+        }
+
+        /* Horizontal rule */
+        hr {
+            border-top-width: 1px;
+            border-color: #93c5fd; /* blue-300 */
+            margin-top: 1rem; /* my-4 */
+            margin-bottom: 1rem; /* my-4 */
+        }
+
+        /* Translation/Rotation grid and buttons */
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .gap-4 {
+            gap: 1rem;
+        }
+        .bg-green-600 {
+            background-color: #059669;
+        }
+        .hover\:bg-green-700:hover {
+            background-color: #047857;
+        }
+        .bg-purple-600 {
+            background-color: #9333ea;
+        }
+        .hover\:bg-purple-700:hover {
+            background-color: #7e22ce;
+        }
+        .mt-6 {
+            margin-top: 1.5rem;
+        }
+        .bg-red-500 {
+            background-color: #ef4444;
+        }
+        .hover\:bg-red-600:hover {
+            background-color: #dc2626;
+        }
+
+
+        /* Canvas & Output Section Styling */
+        .flex-col {
+            flex-direction: column;
+        }
+        .items-center {
+            align-items: center;
+        }
+        .justify-center {
+            justify-content: center;
+        }
+        .border-gray-300 {
+            border-color: #d1d5db;
+        }
+        .bg-gray-50 {
+            background-color: #f9fafb;
+        }
+        .text-gray-600 {
+            color: #4b5563;
+        }
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+        .mt-4 {
+            margin-top: 1rem;
+        }
+        .p-3 {
+            padding: 0.75rem;
+        }
+        .bg-gray-100 {
+            background-color: #f3f4f6;
+        }
+        .border-gray-200 {
+            border-color: #e5e7eb;
+        }
+        .text-gray-700 {
+            color: #374151;
+        }
+        .overflow-auto {
+            overflow: auto;
+        }
+        .h-32 {
+            height: 8rem; /* 128px */
+        }
+    </style>
+</head>
+<body class="bg-pink-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="max-w-5xl w-full bg-white shadow-lg rounded-lg p-6 md:p-8 space-y-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6">
+            Aplikasi Transformasi 2D (Translasi & Rotasi)
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-6 border border-blue-200 rounded-xl p-4 bg-blue-50 shadow-md">
+                <h2 class="text-2xl font-bold text-blue-700 mb-4">Pengaturan Transformasi</h2>
+
+                <div class="space-y-2">
+                    <h3 class="text-xl font-semibold text-blue-600">Segitiga Asli (A, B, C)</h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="input-group">
+                            <label for="ax">Ax:</label>
+                            <input type="number" id="ax" value="10">
+                        </div>
+                        <div class="input-group">
+                            <label for="ay">Ay:</label>
+                            <input type="number" id="ay" value="10">
+                        </div>
+                        <div class="flex items-end">
+                            <button id="resetPointsBtn" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md w-full text-sm">Reset</button>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="bx">Bx:</label>
+                            <input type="number" id="bx" value="30">
+                        </div>
+                        <div class="input-group">
+                            <label for="by">By:</label>
+                            <input type="number" id="by" value="10">
+                        </div>
+                        <div class="input-group"></div>
+
+                        <div class="input-group">
+                            <label for="cx">Cx:</label>
+                            <input type="number" id="cx" value="10">
+                        </div>
+                        <div class="input-group">
+                            <label for="cy">Cy:</label>
+                            <input type="number" id="cy" value="30">
+                        </div>
+                        <div class="input-group"></div>
+                    </div>
+                </div>
+
+                <hr class="border-blue-300 my-4">
+
+                <div class="space-y-2">
+                    <h3 class="text-xl font-semibold text-blue-600">Translasi (Pergeseran)</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label for="tx">Tx (sumbu X):</label>
+                            <input type="number" id="tx" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="ty">Ty (sumbu Y):</label>
+                            <input type="number" id="ty" value="0">
+                        </div>
+                    </div>
+                    <button id="applyTranslationBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Terapkan Translasi
+                    </button>
+                </div>
+
+                <hr class="border-blue-300 my-4">
+
+                <div class="space-y-2">
+                    <h3 class="text-xl font-semibold text-blue-600">Rotasi (Pemutaran)</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label for="angle">Sudut Rotasi (&deg;):</label>
+                            <input type="number" id="angle" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="pivotX">Pivot X (xp):</label>
+                            <input type="number" id="pivotX" value="0">
+                        </div>
+                        <div class="input-group"></div>
+                        <div class="input-group">
+                            <label for="pivotY">Pivot Y (yp):</label>
+                            <input type="number" id="pivotY" value="0">
+                        </div>
+                    </div>
+                    <button id="applyRotationBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Terapkan Rotasi
+                    </button>
+                </div>
+
+                <button id="clearCanvasBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md mt-6">
+                    Hapus Kanvas & Reset
+                </button>
+            </div>
+
+            <div class="flex flex-col items-center justify-center border border-gray-300 rounded-xl p-4 bg-gray-50 shadow-md">
+                <canvas id="transformCanvas" width="400" height="400" class="w-full h-auto rounded-md"></canvas>
+                <p class="text-gray-600 mt-2 text-sm">Objek akan digambar dan ditransformasi di sini.</p>
+                <div id="outputLog" class="mt-4 p-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-700 overflow-auto h-32 w-full">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('transformCanvas');
+        const ctx = canvas.getContext('2d');
+        const outputLog = document.getElementById('outputLog');
+
+        // Original Triangle Points
+        const axInput = document.getElementById('ax');
+        const ayInput = document.getElementById('ay');
+        const bxInput = document.getElementById('bx');
+        const byInput = document.getElementById('by');
+        const cxInput = document.getElementById('cx');
+        const cyInput = document.getElementById('cy');
+        const resetPointsBtn = document.getElementById('resetPointsBtn');
+
+        // Translation Controls
+        const txInput = document.getElementById('tx');
+        const tyInput = document.getElementById('ty');
+        const applyTranslationBtn = document.getElementById('applyTranslationBtn');
+
+        // Rotation Controls
+        const angleInput = document.getElementById('angle');
+        const pivotXInput = document.getElementById('pivotX');
+        const pivotYInput = document.getElementById('pivotY');
+        const applyRotationBtn = document.getElementById('applyRotationBtn');
+
+        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+
+        // Scaling factor for better visualization
+        const SCALE = 5; // 1 unit in Cartesian corresponds to 5 pixels on canvas
+        const CANVAS_CENTER_X = canvas.width / 2;
+        const CANVAS_CENTER_Y = canvas.height / 2;
+
+        let trianglePoints = []; // Array of {x, y} objects
+        const DEFAULT_TRIANGLE = [
+            { x: 10, y: 10 },
+            { x: 30, y: 10 },
+            { x: 10, y: 30 }
+        ];
+
+        /**
+         * Clears the canvas and the output log.
+         */
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            outputLog.innerHTML = '';
+            resetTrianglePoints();
+            drawGrid(); // Redraw grid after clearing
+            drawTriangle(trianglePoints, 'blue', 'Segitiga Asli'); // Draw default triangle
+        }
+
+        /**
+         * Logs a message to the output log.
+         * @param {string} message - The message to log.
+         * @param {string} color - The color of the text (e.g., 'blue', 'green').
+         */
+        function logMessage(message, color = 'black') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = color;
+            outputLog.appendChild(p);
+            outputLog.scrollTop = outputLog.scrollHeight; // Auto-scroll to bottom
+        }
+
+        /**
+         * Converts Cartesian coordinates to Canvas coordinates.
+         * @param {number} x - Cartesian X.
+         * @param {number} y - Cartesian Y.
+         * @returns {Object} - Canvas coordinates {canvasX, canvasY}.
+         */
+        function cartesianToCanvas(x, y) {
+            const canvasX = CANVAS_CENTER_X + x * SCALE;
+            const canvasY = CANVAS_CENTER_Y - y * SCALE; // Y-axis inverted in canvas
+            return { canvasX, canvasY };
+        }
+
+        /**
+         * Draws the coordinate grid and axes on the canvas.
+         */
+        function drawGrid() {
+            ctx.fillStyle = '#fefefe';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#e8e8e8'; // Light gray for grid lines
+            ctx.lineWidth = 0.5;
+
+            // Draw vertical grid lines
+            for (let x = CANVAS_CENTER_X % SCALE; x <= canvas.width; x += 10 * SCALE) { // Every 10 units
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            // Draw horizontal grid lines
+            for (let y = CANVAS_CENTER_Y % SCALE; y <= canvas.height; y += 10 * SCALE) { // Every 10 units
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle = '#666'; // Darker gray for axes
+            ctx.lineWidth = 1;
+
+            // Draw X-axis
+            ctx.beginPath();
+            ctx.moveTo(0, CANVAS_CENTER_Y);
+            ctx.lineTo(canvas.width, CANVAS_CENTER_Y);
+            ctx.stroke();
+
+            // Draw Y-axis
+            ctx.beginPath();
+            ctx.moveTo(CANVAS_CENTER_X, 0);
+            ctx.lineTo(CANVAS_CENTER_X, canvas.height);
+            ctx.stroke();
+
+            // Draw axis labels
+            ctx.fillStyle = '#666';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // X-axis values
+            for (let x = -CANVAS_CENTER_X / SCALE; x <= CANVAS_CENTER_X / SCALE; x += 10) {
+                if (x !== 0) {
+                    const { canvasX, canvasY } = cartesianToCanvas(x, 0);
+                    ctx.fillText(x, canvasX, CANVAS_CENTER_Y + 15);
+                }
+            }
+            // Y-axis values
+            for (let y = -CANVAS_CENTER_Y / SCALE; y <= CANVAS_CENTER_Y / SCALE; y += 10) {
+                if (y !== 0) {
+                    const { canvasX, canvasY } = cartesianToCanvas(0, y);
+                    ctx.fillText(y, CANVAS_CENTER_X - 15, canvasY);
+                }
+            }
+            ctx.fillText('0', CANVAS_CENTER_X - 15, CANVAS_CENTER_Y + 15); // Origin
+        }
+
+        /**
+         * Draws a triangle on the canvas.
+         * @param {Array<Object>} points - Array of {x, y} coordinates of the triangle vertices.
+         * @param {string} color - Stroke color.
+         * @param {string} label - Label for the log.
+         */
+        function drawTriangle(points, color, label) {
+            if (points.length !== 3) {
+                logMessage(`Error: Invalid number of points for triangle: ${label}`, 'red');
+                return;
+            }
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            let { canvasX: startX, canvasY: startY } = cartesianToCanvas(points[0].x, points[0].y);
+            ctx.moveTo(startX, startY);
+
+            for (let i = 1; i < points.length; i++) {
+                let { canvasX, canvasY } = cartesianToCanvas(points[i].x, points[i].y);
+                ctx.lineTo(canvasX, canvasY);
+            }
+            // Close the path
+            ctx.lineTo(startX, startY);
+            ctx.stroke();
+
+            // Draw small circles at vertices and labels
+            ctx.fillStyle = color;
+            ctx.font = 'bold 10px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            points.forEach((p, index) => {
+                let { canvasX, canvasY } = cartesianToCanvas(p.x, p.y);
+                ctx.beginPath();
+                ctx.arc(canvasX, canvasY, 3, 0, 2 * Math.PI);
+                ctx.fill();
+                const labelChar = String.fromCharCode(65 + index); // A, B, C
+                ctx.fillText(`${labelChar}(${p.x},${p.y})`, canvasX + 15, canvasY - 15);
+            });
+            logMessage(`Menggambar ${label}: ${JSON.stringify(points.map(p => `(${p.x},${p.y})`))}`, color);
+        }
+
+        /**
+         * Resets the triangle points to their default values in the input fields.
+         */
+        function resetTrianglePoints() {
+            axInput.value = DEFAULT_TRIANGLE[0].x;
+            ayInput.value = DEFAULT_TRIANGLE[0].y;
+            bxInput.value = DEFAULT_TRIANGLE[1].x;
+            byInput.value = DEFAULT_TRIANGLE[1].y;
+            cxInput.value = DEFAULT_TRIANGLE[2].x;
+            cyInput.value = DEFAULT_TRIANGLE[2].y;
+            // Update the internal trianglePoints array
+            updateTriangleFromInputs();
+            logMessage('Titik segitiga diatur ulang ke nilai default.', 'orange');
+        }
+
+        /**
+         * Reads triangle points from input fields and updates the internal array.
+         */
+        function updateTriangleFromInputs() {
+            trianglePoints = [
+                { x: parseFloat(axInput.value), y: parseFloat(ayInput.value) },
+                { x: parseFloat(bxInput.value), y: parseFloat(byInput.value) },
+                { x: parseFloat(cxInput.value), y: parseFloat(cyInput.value) }
+            ];
+        }
+
+        /**
+         * Applies translation to the triangle points.
+         * @param {Array<Object>} points - Original points.
+         * @param {number} tx - Translation along X.
+         * @param {number} ty - Translation along Y.
+         * @returns {Array<Object>} - Translated points.
+         */
+        function applyTranslation(points, tx, ty) {
+            return points.map(p => ({
+                x: p.x + tx,
+                y: p.y + ty
+            }));
+        }
+
+        /**
+         * Applies rotation to the triangle points around a pivot point.
+         * @param {Array<Object>} points - Original points.
+         * @param {number} angleDeg - Rotation angle in degrees (positive for counter-clockwise).
+         * @param {number} px - Pivot X coordinate.
+         * @param {number} py - Pivot Y coordinate.
+         * @returns {Array<Object>} - Rotated points.
+         */
+        function applyRotation(points, angleDeg, px, py) {
+            const angleRad = angleDeg * Math.PI / 180; // Convert to radians
+            const cosTheta = Math.cos(angleRad);
+            const sinTheta = Math.sin(angleRad);
+
+            return points.map(p => {
+                // Translate point to origin relative to pivot
+                const xTranslated = p.x - px;
+                const yTranslated = p.y - py;
+
+                // Apply rotation formula
+                const xRotated = xTranslated * cosTheta - yTranslated * sinTheta;
+                const yRotated = xTranslated * sinTheta + yTranslated * cosTheta;
+
+                // Translate back relative to pivot
+                return {
+                    x: parseFloat((xRotated + px).toFixed(2)),
+                    y: parseFloat((yRotated + py).toFixed(2))
+                };
+            });
+        }
+
+        // --- Event Handlers ---
+        function handleApplyTranslation() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear only drawing, keep grid
+            drawGrid();
+
+            updateTriangleFromInputs(); // Get current points from inputs
+            drawTriangle(trianglePoints, 'blue', 'Segitiga Asli'); // Draw original for reference
+
+            const tx = parseFloat(txInput.value);
+            const ty = parseFloat(tyInput.value);
+
+            const translatedPoints = applyTranslation(trianglePoints, tx, ty);
+            drawTriangle(translatedPoints, 'green', `Hasil Translasi (Tx=${tx}, Ty=${ty})`);
+        }
+
+        function handleApplyRotation() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear only drawing, keep grid
+            drawGrid();
+
+            updateTriangleFromInputs(); // Get current points from inputs
+            drawTriangle(trianglePoints, 'blue', 'Segitiga Asli'); // Draw original for reference
+
+            const angle = parseFloat(angleInput.value);
+            const pivotX = parseFloat(pivotXInput.value);
+            const pivotY = parseFloat(pivotYInput.value);
+
+            const rotatedPoints = applyRotation(trianglePoints, angle, pivotX, pivotY);
+            drawTriangle(rotatedPoints, 'purple', `Hasil Rotasi (${angle}°, Pivot: ${pivotX},${pivotY})`);
+
+            // Draw pivot point for reference
+            const { canvasX: pivotCanvasX, canvasY: pivotCanvasY } = cartesianToCanvas(pivotX, pivotY);
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(pivotCanvasX, pivotCanvasY, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillText(`P(${pivotX},${pivotY})`, pivotCanvasX + 15, pivotCanvasY + 5);
+        }
+
+        // Event Listeners
+        resetPointsBtn.addEventListener('click', clearCanvas); // Clear canvas also resets points
+        applyTranslationBtn.addEventListener('click', handleApplyTranslation);
+        applyRotationBtn.addEventListener('click', handleApplyRotation);
+        clearCanvasBtn.addEventListener('click', clearCanvas);
+
+        // Initial setup on load
+        window.addEventListener('load', () => {
+            clearCanvas(); // Initialize canvas, grid, and default triangle
+        });
+    </script>
+</body>
+</html>

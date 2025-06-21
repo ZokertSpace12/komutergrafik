@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Kurva Bezier</title>
+    <style>
+        /* Base styles adapted from Tailwind's preflight and common utilities */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb; /* gray-200 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            line-height: inherit;
+            background-color: #fce7f3; /* bg-pink-100 */
+            padding: 1rem; /* p-4 */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Container styling */
+        .max-w-5xl {
+            max-width: 64rem; /* Equivalent to 1024px, common for max-w-5xl */
+        }
+        .w-full {
+            width: 100%;
+        }
+        .bg-white {
+            background-color: #fff;
+        }
+        .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .rounded-lg {
+            border-radius: 0.5rem;
+        }
+        .p-6 {
+            padding: 1.5rem;
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:p-8 {
+                padding: 2rem;
+            }
+        }
+        .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 2rem;
+            margin-bottom: 0;
+        }
+
+        /* Heading styles */
+        .text-3xl {
+            font-size: 1.875rem; /* 30px */
+            line-height: 2.25rem; /* 36px */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:text-4xl {
+                font-size: 2.25rem; /* 36px */
+                line-height: 2.5rem; /* 40px */
+            }
+        }
+        .font-extrabold {
+            font-weight: 800;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-gray-800 {
+            color: #1f2937;
+        }
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Grid layout */
+        .grid {
+            display: grid;
+        }
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .gap-6 {
+            gap: 1.5rem;
+        }
+
+        /* Input section styling */
+        .border {
+            border-width: 1px;
+        }
+        .border-blue-200 {
+            border-color: #bfdbfe;
+        }
+        .rounded-xl {
+            border-radius: 0.75rem;
+        }
+        .p-4 {
+            padding: 1rem;
+        }
+        .bg-blue-50 {
+            background-color: #eff6ff;
+        }
+        .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .text-2xl {
+            font-size: 1.5rem; /* 24px */
+            line-height: 2rem; /* 32px */
+        }
+        .font-bold {
+            font-weight: 700;
+        }
+        .text-blue-700 {
+            color: #1d4ed8;
+        }
+        .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 1.5rem;
+            margin-bottom: 0;
+        }
+        .space-y-2 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+        }
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+        .block {
+            display: block;
+        }
+        .text-gray-700 {
+            color: #374151;
+        }
+        .font-medium {
+            font-weight: 500;
+        }
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+        .control-point-input {
+            display: flex;
+            gap: 0.5rem; /* 8px */
+            margin-bottom: 0.5rem; /* 8px */
+        }
+        input[type="number"] {
+            display: block;
+            padding: 0.5rem; /* p-2 */
+            border-width: 1px;
+            border-color: #d1d5db; /* border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            /* Focus styles: mimic Tailwind's focus:ring and focus:border */
+            outline: 2px solid transparent; /* For focus outline */
+            outline-offset: 2px;
+            box-shadow: none; /* Reset default browser shadow */
+            transition: all 0.15s ease-in-out; /* Smooth transition for focus */
+        }
+        input[type="number"]:focus {
+            border-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* Simulating focus:ring-blue-500 */
+        }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .w-1\/2 { width: 50%; }
+
+        /* Button styling */
+        button {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 0.5rem; /* rounded-lg */
+            padding-top: 0.5rem; /* py-2 */
+            padding-bottom: 0.5rem;
+            padding-left: 1rem; /* px-4 */
+            padding-right: 1rem;
+            font-weight: 700; /* font-bold */
+            color: #fff; /* text-white */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            display: block; /* w-full or flex-1 */
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .flex { display: flex; }
+        .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+            margin-left: 0.5rem;
+            margin-right: 0;
+        }
+        .mt-3 { margin-top: 0.75rem; }
+        .flex-1 { flex: 1 1 0%; }
+        .text-sm {
+            font-size: 0.875rem; /* 14px */
+            line-height: 1.25rem; /* 20px */
+        }
+
+        .bg-green-500 { background-color: #22c55e; }
+        .hover\:bg-green-600:hover { background-color: #16a34a; }
+        .bg-yellow-500 { background-color: #eab308; }
+        .hover\:bg-yellow-600:hover { background-color: #ca8a04; }
+
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .gap-4 {
+            gap: 1rem;
+        }
+        .text-gray-500 {
+            color: #6b7280;
+        }
+        .mt-1 {
+            margin-top: 0.25rem;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+        .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0.75rem;
+            margin-bottom: 0;
+        }
+        .pt-4 {
+            padding-top: 1rem;
+        }
+
+        .bg-indigo-600 {
+            background-color: #4f46e5;
+        }
+        .hover\:bg-indigo-700:hover {
+            background-color: #4338ca;
+        }
+        .bg-red-500 {
+            background-color: #ef4444;
+        }
+        .hover\:bg-red-600:hover {
+            background-color: #dc2626;
+        }
+
+
+        /* Canvas & Output Section Styling */
+        .items-center {
+            align-items: center;
+        }
+        .justify-center {
+            justify-content: center;
+        }
+        .border-gray-300 {
+            border-color: #d1d5db;
+        }
+        .bg-gray-50 {
+            background-color: #f9fafb;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            width: 100%; /* w-full */
+            height: auto; /* h-auto */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+        .mt-4 {
+            margin-top: 1rem;
+        }
+        .p-3 {
+            padding: 0.75rem;
+        }
+        .bg-gray-100 {
+            background-color: #f3f4f6;
+        }
+        .border-gray-200 {
+            border-color: #e5e7eb;
+        }
+        .text-gray-700 {
+            color: #374151;
+        }
+        .font-bold {
+            font-weight: 700;
+        }
+        .text-gray-800 {
+            color: #1f2937;
+        }
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+        .font-semibold {
+            font-weight: 600;
+        }
+        .text-xs {
+            font-size: 0.75rem; /* 12px */
+            line-height: 1rem; /* 16px */
+        }
+        .text-gray-600 {
+            color: #4b5563;
+        }
+        .overflow-auto {
+            overflow: auto;
+        }
+        .h-24 {
+            height: 6rem; /* 96px */
+        }
+    </style>
+</head>
+<body class="bg-pink-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="max-w-5xl w-full bg-white shadow-lg rounded-lg p-6 md:p-8 space-y-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6">
+            Generator Kurva Bezier Interaktif
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-6 border border-blue-200 rounded-xl p-4 bg-blue-50 shadow-md">
+                <h2 class="text-2xl font-bold text-blue-700 mb-4">Input Parameter</h2>
+
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Titik Kontrol (Px, Py):</label>
+                    <div id="controlPointsContainer" class="space-y-2">
+                        <div class="control-point-input">
+                            <input type="number" value="50" class="px-2 py-1 border border-gray-300 rounded-md w-1/2" placeholder="X">
+                            <input type="number" value="350" class="px-2 py-1 border border-gray-300 rounded-md w-1/2" placeholder="Y">
+                        </div>
+                        <div class="control-point-input">
+                            <input type="number" value="200" class="px-2 py-1 border border-gray-300 rounded-md w-1/2" placeholder="X">
+                            <input type="number" value="50" class="px-2 py-1 border border-gray-300 rounded-md w-1/2" placeholder="Y">
+                        </div>
+                        <div class="control-point-input">
+                            <input type="number" value="350" class="px-2 py-1 border border-gray-300 rounded-md w-1/2" placeholder="X">
+                            <input type="number" value="350" class="px-2 py-1 border border-gray-300 rounded-md w-1/2" placeholder="Y">
+                        </div>
+                    </div>
+                    <div class="flex space-x-2 mt-3">
+                        <button id="addPointBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md text-sm">Tambah Titik</button>
+                        <button id="removePointBtn" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md text-sm">Hapus Titik Terakhir</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="deltaT" class="block text-gray-700 font-medium mb-1">Delta t (Δt):</label>
+                        <input type="number" id="deltaT" value="0.01" step="0.001" min="0.001" max="1" class="w-full p-2 border border-gray-300 rounded-md">
+                        <p class="text-sm text-gray-500 mt-1">Semakin kecil, semakin halus kurva.</p>
+                    </div>
+                    <div>
+                        <label for="specificT" class="block text-gray-700 font-medium mb-1">Nilai t spesifik:</label>
+                        <input type="number" id="specificT" value="0.5" step="0.01" min="0" max="1" class="w-full p-2 border border-gray-300 rounded-md">
+                        <p class="text-sm text-gray-500 mt-1">Hitung titik pada t ini.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col space-y-3 pt-4">
+                    <button id="drawCurveBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Gambar Kurva Bezier
+                    </button>
+                    <button id="clearCanvasBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Hapus Kanvas
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center justify-center border border-gray-300 rounded-xl p-4 bg-gray-50 shadow-md">
+                <canvas id="bezierCanvas" width="400" height="400" class="w-full h-auto rounded-md"></canvas>
+                <div class="mt-4 p-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-700 w-full">
+                    <h3 class="font-bold text-gray-800 mb-2">Informasi Kurva:</h3>
+                    <p>Jumlah Titik Digambar: <span id="numPointsOutput" class="font-semibold">0</span></p>
+                    <p>Koordinat Titik pada t spesifik (<span id="specificTValueSpan">0.5</span>): <span id="specificPointOutput" class="font-semibold">X: -, Y: -</span></p>
+                    <p class="mt-2 text-xs text-gray-600">Titik kontrol (merah), kurva (biru), titik spesifik (hijau).</p>
+                </div>
+                <div id="outputLog" class="mt-4 p-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-700 overflow-auto h-24 w-full">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('bezierCanvas');
+        const ctx = canvas.getContext('2d');
+        const outputLog = document.getElementById('outputLog');
+        const controlPointsContainer = document.getElementById('controlPointsContainer');
+        const addPointBtn = document.getElementById('addPointBtn');
+        const removePointBtn = document.getElementById('removePointBtn');
+        const deltaTInput = document.getElementById('deltaT');
+        const specificTInput = document.getElementById('specificT');
+        const specificTValueSpan = document.getElementById('specificTValueSpan');
+        const numPointsOutput = document.getElementById('numPointsOutput');
+        const specificPointOutput = document.getElementById('specificPointOutput');
+        const drawCurveBtn = document.getElementById('drawCurveBtn');
+        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+
+        // Scaling factor for better visualization on canvas
+        const SCALE = 1; // Use 1:1 pixel mapping, adjust canvas size if needed for larger coordinates
+        const CANVAS_OFFSET_X = 0; // No offset for now, direct pixel mapping
+        const CANVAS_OFFSET_Y = 0;
+
+        /**
+         * Clears the canvas and the output log.
+         */
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            outputLog.innerHTML = '';
+            numPointsOutput.textContent = '0';
+            specificPointOutput.textContent = 'X: -, Y: -';
+            drawGrid(); // Redraw grid after clearing
+        }
+
+        /**
+         * Logs a message to the output log.
+         * @param {string} message - The message to log.
+         * @param {string} color - The color of the text (e.g., 'blue', 'green').
+         */
+        function logMessage(message, color = 'black') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = color;
+            outputLog.appendChild(p);
+            outputLog.scrollTop = outputLog.scrollHeight; // Auto-scroll to bottom
+        }
+
+        /**
+         * Draws a pixel on the canvas.
+         * @param {number} x - X coordinate.
+         * @param {number} y - Y coordinate.
+         * @param {string} color - Color of the pixel.
+         * @param {number} size - Size of the pixel.
+         */
+        function drawPixel(x, y, color, size = 2) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(CANVAS_OFFSET_X + x * SCALE, CANVAS_OFFSET_Y + y * SCALE, size, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        /**
+         * Draws the coordinate grid on the canvas (simple grid for pixel accuracy).
+         */
+        function drawGrid() {
+            // Draw a background pattern (optional, for visibility)
+            ctx.fillStyle = '#fefefe';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#e8e8e8'; // Light gray for grid lines
+            ctx.lineWidth = 0.5;
+
+            // Draw vertical lines
+            for (let x = 0; x <= canvas.width; x += 20) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            // Draw horizontal lines
+            for (let y = 0; y <= canvas.height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Draw origin marker
+            ctx.fillStyle = '#666';
+            ctx.beginPath();
+            ctx.arc(0, 0, 3, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.font = '10px Arial';
+            ctx.fillText('(0,0)', 10, 10);
+        }
+
+        /**
+         * Calculates binomial coefficient C(n, i).
+         * @param {number} n
+         * @param {number} i
+         * @returns {number}
+         */
+        function binomialCoefficient(n, i) {
+            if (i < 0 || i > n) return 0;
+            if (i === 0 || i === n) return 1;
+            if (i > n / 2) i = n - i; // Optimization
+
+            let res = 1;
+            for (let k = 1; k <= i; ++k) {
+                res = res * (n - k + 1) / k;
+            }
+            return res;
+        }
+
+        /**
+         * Calculates a point on the Bezier curve for a given t.
+         * B(t) = Sum(i=0 to n) [C(n, i) * t^i * (1-t)^(n-i) * Pi]
+         * @param {number} t - Parameter t (0 to 1).
+         * @param {Array<Object>} controlPoints - Array of control points {x, y}.
+         * @returns {Object} - Calculated point {x, y}.
+         */
+        function calculateBezierPoint(t, controlPoints) {
+            const n = controlPoints.length - 1;
+            let x = 0;
+            let y = 0;
+
+            for (let i = 0; i <= n; i++) {
+                const bernstein = binomialCoefficient(n, i) * Math.pow(t, i) * Math.pow(1 - t, n - i);
+                x += bernstein * controlPoints[i].x;
+                y += bernstein * controlPoints[i].y;
+            }
+            return { x: x, y: y };
+        }
+
+        /**
+         * Draws the Bezier curve and plots control points.
+         */
+        function drawBezierCurve() {
+            clearCanvas();
+            const controlPoints = [];
+            document.querySelectorAll('#controlPointsContainer .control-point-input').forEach(div => {
+                const inputs = div.querySelectorAll('input[type="number"]');
+                controlPoints.push({
+                    x: parseFloat(inputs[0].value),
+                    y: parseFloat(inputs[1].value)
+                });
+            });
+
+            if (controlPoints.length < 2) {
+                logMessage('Minimal 2 titik kontrol diperlukan untuk menggambar kurva Bezier.', 'red');
+                return;
+            }
+
+            const deltaT = parseFloat(deltaTInput.value);
+            const specificT = parseFloat(specificTInput.value);
+
+            // Log control points
+            logMessage(`Titik Kontrol: ${JSON.stringify(controlPoints)}`, 'gray');
+            logMessage(`Delta t (Δt): ${deltaT}`, 'gray');
+
+            // Draw control points
+            controlPoints.forEach((point, index) => {
+                drawPixel(point.x, point.y, 'red', 4); // Draw larger red dots for control points
+                ctx.fillStyle = '#1f2937'; /* text-gray-800 */
+                ctx.font = '12px Arial';
+                ctx.fillText(`P${index}(${point.x}, ${point.y})`, point.x + 8, point.y + 8);
+            });
+
+            // Draw lines connecting control points (Bezier polygon)
+            ctx.strokeStyle = '#a0a0a0'; // Light gray for control lines
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(controlPoints[0].x * SCALE + CANVAS_OFFSET_X, controlPoints[0].y * SCALE + CANVAS_OFFSET_Y);
+            for (let i = 1; i < controlPoints.length; i++) {
+                ctx.lineTo(controlPoints[i].x * SCALE + CANVAS_OFFSET_X, controlPoints[i].y * SCALE + CANVAS_OFFSET_Y);
+            }
+            ctx.stroke();
+
+            // Draw the Bezier curve
+            ctx.strokeStyle = 'blue';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            let firstPoint = calculateBezierPoint(0, controlPoints);
+            ctx.moveTo(firstPoint.x * SCALE + CANVAS_OFFSET_X, firstPoint.y * SCALE + CANVAS_OFFSET_Y);
+
+            let plottedPointsCount = 0;
+            let specificPoint = null;
+
+            for (let t = 0; t <= 1; t += deltaT) {
+                const point = calculateBezierPoint(t, controlPoints);
+                drawPixel(point.x, point.y, 'blue', 1.5); // Draw small blue dots for curve points
+                ctx.lineTo(point.x * SCALE + CANVAS_OFFSET_X, point.y * SCALE + CANVAS_OFFSET_Y);
+                plottedPointsCount++;
+
+                // Capture the specific point if t is close enough
+                if (Math.abs(t - specificT) < (deltaT / 2) && specificPoint === null) {
+                    specificPoint = point;
+                }
+            }
+            ctx.stroke();
+
+            // Ensure the very last point (t=1) is drawn
+            const lastPoint = calculateBezierPoint(1, controlPoints);
+            drawPixel(lastPoint.x, lastPoint.y, 'blue', 1.5);
+            plottedPointsCount++; // Count the last point
+
+            // Update output information
+            numPointsOutput.textContent = plottedPointsCount;
+            specificTValueSpan.textContent = specificT;
+            if (specificPoint) {
+                specificPointOutput.textContent = `X: ${specificPoint.x.toFixed(2)}, Y: ${specificPoint.y.toFixed(2)}`;
+                drawPixel(specificPoint.x, specificPoint.y, 'green', 5); // Draw larger green dot for specific point
+                logMessage(`Titik pada t=${specificT} adalah (${specificPoint.x.toFixed(2)}, ${specificPoint.y.toFixed(2)})`, 'darkgreen');
+            } else {
+                // If specific T was outside the loop precision, calculate it precisely
+                const preciseSpecificPoint = calculateBezierPoint(specificT, controlPoints);
+                specificPointOutput.textContent = `X: ${preciseSpecificPoint.x.toFixed(2)}, Y: ${preciseSpecificPoint.y.toFixed(2)}`;
+                drawPixel(preciseSpecificPoint.x, preciseSpecificPoint.y, 'green', 5);
+                logMessage(`Titik pada t=${specificT} (dihitung presisi) adalah (${preciseSpecificPoint.x.toFixed(2)}, ${preciseSpecificPoint.y.toFixed(2)})`, 'darkgreen');
+            }
+
+            logMessage(`Kurva Bezier digambar dengan ${plottedPointsCount} titik.`, 'blue');
+        }
+
+        /**
+         * Adds a new control point input field.
+         */
+        function addControlPointInput() {
+            const div = document.createElement('div');
+            div.className = 'control-point-input'; /* Reusing existing custom class */
+            div.innerHTML = `
+                <input type="number" value="200" class="px-2 py-1 border border-gray-300 rounded-md w-1/2" placeholder="X">
+                <input type="number" value="200" class="px-2 py-1 border border-gray-300 rounded-md w-1/2" placeholder="Y">
+            `;
+            controlPointsContainer.appendChild(div);
+            // Optionally, update the curve immediately
+            drawBezierCurve();
+        }
+
+        /**
+         * Removes the last control point input field.
+         */
+        function removeControlPointInput() {
+            if (controlPointsContainer.children.length > 2) { // Ensure at least 2 points remain
+                controlPointsContainer.lastElementChild.remove();
+                // Optionally, update the curve immediately
+                drawBezierCurve();
+            } else {
+                logMessage('Minimal 2 titik kontrol diperlukan.', 'orange');
+            }
+        }
+
+        // Event Listeners
+        addPointBtn.addEventListener('click', addControlPointInput);
+        removePointBtn.addEventListener('click', removeControlPointInput);
+        drawCurveBtn.addEventListener('click', drawBezierCurve);
+        clearCanvasBtn.addEventListener('click', clearCanvas);
+
+        // Initial draw of the grid and default curve
+        drawGrid();
+        drawBezierCurve(); // Draw initial curve based on default points
+    </script>
+</body>
+</html>

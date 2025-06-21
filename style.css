@@ -1,0 +1,495 @@
+/* Import Google Fonts for a modern, clean look */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Warna Palet */
+    --primary-pink: #FF99CC; /* Pink Cerah */
+    --light-pink: #FFE6F0; /* Pink Muda Sangat Pucat (Sidebar Background) */
+    --hover-pink: #FF66B3; /* Pink Lebih Gelap untuk Hover */
+    --text-dark: #333;
+    --text-medium: #666;
+    --text-light: #888;
+    --background-light: #F8F8F8; /* Hampir Putih */
+    --background-white: #FFFFFF;
+    --border-light: #EEE;
+    --shadow-light: rgba(0, 0, 0, 0.05);
+    --shadow-medium: rgba(0, 0, 0, 0.1);
+    --shadow-strong: rgba(0, 0, 0, 0.2);
+
+    /* Transisi */
+    --transition-fast: 0.3s ease-out;
+    --transition-normal: 0.5s ease-out;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    background-color: var(--background-light);
+    color: var(--text-dark);
+    line-height: 1.6;
+    overflow-x: hidden; /* Mencegah scrollbar horizontal yang tidak diinginkan */
+}
+
+/* Global Styles for headings and paragraphs */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-dark);
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+p {
+    margin-bottom: 15px;
+}
+
+a {
+    text-decoration: none;
+    color: var(--primary-pink);
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--hover-pink);
+}
+
+/* Sidebar Styling */
+.sidebar {
+    height: 100%;
+    width: 0; /* Mulai dengan lebar 0 (tertutup) */
+    position: fixed;
+    z-index: 1000; /* Pastikan di atas elemen lain */
+    top: 0;
+    left: 0;
+    background-color: var(--light-pink); /* Pink muda */
+    overflow-x: hidden;
+    transition: width var(--transition-normal), box-shadow var(--transition-normal); /* Animasi lebar dan bayangan */
+    padding-top: 20px; /* Jarak atas */
+    box-shadow: 2px 0 10px var(--shadow-medium); /* Bayangan default */
+    display: flex;
+    flex-direction: column; /* Untuk menata konten vertikal */
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 25px; /* Sesuaikan padding */
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4); /* Garis pemisah halus */
+    background-color: rgba(255, 255, 255, 0.3); /* Sedikit efek kaca */
+}
+
+.sidebar-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.sidebar .closebtn {
+    font-size: 30px;
+    color: var(--text-medium);
+    transition: color var(--transition-fast);
+    padding: 0 10px; /* Agar mudah diklik */
+}
+
+.sidebar .closebtn:hover {
+    color: var(--primary-pink);
+    transform: scale(1.1); /* Sedikit membesar saat hover */
+}
+
+.sidebar-nav {
+    flex-grow: 1; /* Biarkan navigasi mengambil ruang yang tersedia */
+    padding-bottom: 20px; /* Padding di bagian bawah */
+}
+
+.sidebar a {
+    padding: 12px 25px; /* Padding lebih besar */
+    text-decoration: none;
+    font-size: 18px;
+    color: var(--text-medium); /* Warna teks menu */
+    display: flex; /* Untuk ikon dan teks sejajar */
+    align-items: center;
+    transition: background-color var(--transition-fast), color var(--transition-fast), padding-left var(--transition-fast);
+    border-left: 5px solid transparent; /* Garis aktif (tidak terlihat saat tidak aktif) */
+}
+
+.sidebar a i {
+    margin-right: 15px; /* Jarak antara ikon dan teks */
+    font-size: 20px;
+    color: var(--primary-pink); /* Warna ikon */
+    transition: color var(--transition-fast);
+}
+
+.sidebar a:hover {
+    color: var(--text-dark); /* Teks lebih gelap saat hover */
+    background-color: rgba(255, 255, 255, 0.6); /* Latar belakang transparan putih saat hover */
+    padding-left: 30px; /* Efek sedikit bergeser saat hover */
+    border-left-color: var(--primary-pink); /* Tampilkan garis aktif */
+}
+
+.sidebar a:hover i {
+    color: var(--hover-pink); /* Warna ikon berubah saat hover */
+}
+
+.sidebar h3 {
+    padding: 10px 25px;
+    color: var(--text-light); /* Warna judul section di sidebar */
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar h3 i {
+    margin-right: 10px;
+    font-size: 18px;
+    color: var(--primary-pink);
+}
+
+.separator {
+    height: 1px;
+    background-color: var(--border-light); /* Garis pemisah */
+    margin: 15px 25px; /* Margin lebih besar */
+}
+
+/* Main Content Styling */
+#main {
+    transition: margin-left var(--transition-normal), opacity var(--transition-normal);
+    padding: 20px; /* Padding keseluruhan */
+    margin-left: 0;
+    position: relative;
+    z-index: 1; /* Agar konten tidak tertutup bayangan sidebar saat terbuka */
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+    margin-bottom: 30px; /* Jarak dari konten */
+    background-color: var(--background-white);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px var(--shadow-light);
+    position: sticky; /* Sticky navbar */
+    top: 0;
+    z-index: 99; /* Di bawah sidebar tapi di atas konten */
+    padding-left: 20px; /* Agar tombol tidak terlalu mepet */
+    padding-right: 20px;
+}
+
+.navbar .openbtn {
+    font-size: 18px;
+    cursor: pointer;
+    background-color: var(--primary-pink); /* Pink terang untuk tombol buka */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px; /* Lebih bulat */
+    box-shadow: 0 4px 8px var(--shadow-medium);
+    transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    display: flex;
+    align-items: center;
+}
+
+.navbar .openbtn i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.navbar .openbtn:hover {
+    background-color: var(--hover-pink); /* Pink lebih gelap saat hover */
+    transform: translateY(-2px); /* Efek sedikit naik */
+    box-shadow: 0 6px 12px var(--shadow-strong);
+}
+
+.navbar .page-title {
+    margin: 0 auto; /* Tengah secara horizontal */
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-pink);
+    text-align: center;
+    flex-grow: 1; /* Memungkinkan judul mengambil ruang sisa */
+}
+
+/* Content Area Styling */
+#content-area {
+    background-color: var(--background-white); /* Latar belakang konten putih */
+    padding: 30px; /* Padding lebih besar */
+    border-radius: 10px;
+    box-shadow: 0 0 20px var(--shadow-light); /* Bayangan lebih halus dan menyebar */
+    min-height: calc(100vh - 200px); /* Sesuaikan tinggi minimum agar tidak terlalu pendek */
+    opacity: 0; /* Dimulai dengan opacity 0 untuk animasi JS */
+    transform: translateY(20px); /* Dimulai dengan sedikit geser ke bawah untuk animasi JS */
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out; /* Transisi untuk fade-in */
+}
+
+/* Hero Section */
+.hero-section {
+    text-align: center;
+    padding: 50px 20px;
+    background: linear-gradient(135deg, var(--light-pink) 0%, rgba(255, 255, 255, 0.8) 100%);
+    border-radius: 10px;
+    margin-bottom: 40px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.hero-section h2 {
+    font-size: 38px;
+    color: var(--primary-pink);
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.hero-section p {
+    font-size: 18px;
+    color: var(--text-medium);
+    max-width: 700px;
+    margin: 0 auto 30px auto;
+}
+
+.cta-button {
+    background-color: var(--primary-pink);
+    color: white;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 50px; /* Sangat bulat */
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: 0 4px 10px var(--shadow-medium);
+    display: inline-flex;
+    align-items: center;
+}
+
+.cta-button i {
+    margin-left: 10px;
+}
+
+.cta-button:hover {
+    background-color: var(--hover-pink);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px var(--shadow-strong);
+}
+
+/* Info Cards Styling */
+.info-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsif */
+    gap: 30px; /* Jarak antar kartu */
+    margin-bottom: 40px;
+}
+
+.info-card {
+    background-color: var(--background-white);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px var(--shadow-light);
+    display: flex;
+    align-items: center;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.info-card:hover {
+    transform: translateY(-5px); /* Sedikit mengangkat saat hover */
+    box-shadow: 0 8px 20px var(--shadow-medium);
+}
+
+.card-icon {
+    font-size: 36px;
+    color: var(--primary-pink);
+    margin-right: 20px;
+    width: 60px; /* Ukuran tetap untuk ikon */
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 153, 204, 0.1); /* Latar belakang pink sangat muda */
+    border-radius: 50%; /* Bulat */
+}
+
+.card-content h3 {
+    font-size: 20px;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+}
+
+.card-content p {
+    font-size: 15px;
+    color: var(--text-medium);
+    margin-bottom: 0;
+}
+
+/* Dashboard Section (for Pie Chart) */
+.dashboard-section {
+    background-color: var(--background-white);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px var(--shadow-light);
+    text-align: center; /* Untuk menengahkan pie chart dan legend */
+}
+
+.dashboard-section h2 {
+    font-size: 28px;
+    color: var(--primary-pink);
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+/* Pie Chart Styling */
+.pie-chart-container {
+    width: 400px; /* Ukuran container grafik */
+    height: 400px;
+    position: relative;
+    margin: 30px auto; /* Tengah secara horizontal, jarak dari atas/bawah */
+    display: block; /* Pastikan canvas adalah block element */
+}
+
+.pie-chart-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* Pastikan tidak ada border atau padding bawaan */
+}
+
+.pie-chart-legend {
+    list-style: none;
+    padding: 0;
+    margin-top: 30px;
+    display: flex; /* Untuk layout horizontal */
+    flex-wrap: wrap; /* Jika terlalu banyak item, akan wrap ke baris baru */
+    justify-content: center; /* Tengah secara horizontal */
+    gap: 25px; /* Jarak antar item legend */
+}
+
+.pie-chart-legend li {
+    font-size: 16px;
+    color: var(--text-medium);
+    display: flex;
+    align-items: center;
+}
+
+.pie-chart-legend span {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px; /* Sedikit lebih bulat */
+    vertical-align: middle;
+    margin-right: 10px;
+    border: 1px solid var(--border-light);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); /* Sedikit efek inset */
+}
+
+/* Footer Styling */
+.site-footer {
+    text-align: center;
+    padding: 25px;
+    margin-top: 50px; /* Jarak dari konten */
+    background-color: var(--background-white);
+    color: var(--text-light);
+    font-size: 14px;
+    border-top: 1px solid var(--border-light);
+    box-shadow: 0 -2px 10px var(--shadow-light);
+    border-radius: 10px 10px 0 0; /* Sudut atas membulat */
+}
+
+/* Responsive Design (Basic) */
+@media (max-width: 768px) {
+    .navbar .page-title {
+        font-size: 22px;
+        text-align: left; /* Sesuaikan posisi judul di layar kecil */
+        margin-left: 20px; /* Beri jarak dari tombol */
+    }
+
+    .hero-section h2 {
+        font-size: 30px;
+    }
+
+    .hero-section p {
+        font-size: 16px;
+    }
+
+    .info-cards-container {
+        grid-template-columns: 1fr; /* Satu kolom di layar kecil */
+    }
+
+    .pie-chart-container {
+        width: 100%; /* Lebar penuh di layar kecil */
+        height: 300px; /* Tinggi disesuaikan */
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        padding-top: 10px;
+    }
+    .sidebar-header {
+        padding: 5px 15px;
+    }
+    .sidebar-title {
+        font-size: 20px;
+    }
+    .sidebar .closebtn {
+        font-size: 28px;
+    }
+    .sidebar a {
+        font-size: 16px;
+        padding: 10px 15px;
+    }
+    .sidebar h3 {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
+    .navbar {
+        flex-direction: column; /* Tombol dan judul bertumpuk */
+        align-items: flex-start;
+    }
+    .navbar .openbtn {
+        width: 100%; /* Tombol lebar penuh */
+        margin-bottom: 15px;
+        justify-content: center; /* Tengah ikon dan teks */
+    }
+    .navbar .page-title {
+        font-size: 20px;
+        text-align: center;
+        margin-left: 0;
+        width: 100%;
+    }
+    #main {
+        padding: 10px;
+    }
+    #content-area {
+        padding: 20px;
+    }
+    .hero-section {
+        padding: 30px 15px;
+    }
+    .hero-section h2 {
+        font-size: 24px;
+    }
+    .hero-section p {
+        font-size: 14px;
+    }
+    .cta-button {
+        padding: 12px 25px;
+        font-size: 16px;
+    }
+    .info-card {
+        flex-direction: column; /* Ikon di atas konten di kartu */
+        text-align: center;
+    }
+    .card-icon {
+        margin: 0 0 15px 0; /* Posisi ikon di atas */
+    }
+    .dashboard-section {
+        padding: 20px;
+    }
+    .dashboard-section h2 {
+        font-size: 24px;
+    }
+    .pie-chart-legend {
+        gap: 15px;
+        font-size: 14px;
+    }
+}

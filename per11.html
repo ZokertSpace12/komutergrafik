@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi Antialiasing Garis</title>
+    <style>
+        /* Custom font for a clean look */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fce4ec; /* bg-pink-100 */
+            padding: 1rem; /* p-4 */
+            min-height: 100vh; /* min-h-screen */
+            display: flex; /* flex */
+            align-items: center; /* items-center */
+            justify-content: center; /* justify-center */
+        }
+
+        .container {
+            max-width: 64rem; /* max-w-4xl */
+            width: 100%; /* w-full */
+            background-color: #ffffff; /* bg-white */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 1.5rem; /* p-6 */
+            display: flex; /* flex */
+            flex-direction: column; /* flex-col */
+            gap: 2rem; /* space-y-8 */
+        }
+
+        @media (min-width: 768px) { /* md:p-8 */
+            .container {
+                padding: 2rem;
+            }
+        }
+
+        h1 {
+            font-size: 2.25rem; /* text-3xl */
+            line-height: 2.5rem;
+            font-weight: 800; /* font-extrabold */
+            text-align: center; /* text-center */
+            color: #1a202c; /* text-gray-800 */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+
+        @media (min-width: 768px) { /* md:text-4xl */
+            h1 {
+                font-size: 2.5rem;
+                line-height: 1;
+            }
+        }
+
+        .grid-container { /* Replaces grid grid-cols-1 md:grid-cols-2 gap-6 */
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem; /* gap-6 */
+        }
+
+        @media (min-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .controls-section { /* Replaces space-y-6 border border-blue-200 rounded-xl p-4 bg-blue-50 shadow-md */
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* space-y-6 */
+            border: 1px solid #bfdbfe; /* border-blue-200 */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1rem; /* p-4 */
+            background-color: #eff6ff; /* bg-blue-50 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+
+        h2 {
+            font-size: 1.5rem; /* text-2xl */
+            line-height: 2rem;
+            font-weight: 700; /* font-bold */
+            color: #1d4ed8; /* text-blue-700 */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+
+        .section-group { /* Replaces space-y-2 */
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem; /* space-y-2 */
+        }
+
+        h3 {
+            font-size: 1.25rem; /* text-xl */
+            line-height: 1.75rem;
+            font-weight: 600; /* font-semibold */
+            color: #2563eb; /* text-blue-600 */
+        }
+
+        .input-grid-2 { /* Replaces grid grid-cols-2 gap-4 */
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem; /* gap-4 */
+        }
+
+        .input-field-group label { /* Replaces block text-gray-700 font-medium mb-1 */
+            display: block;
+            color: #4a5568; /* text-gray-700 */
+            font-weight: 500; /* font-medium */
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+
+        .input-field-group input[type="number"] { /* Replaces w-full p-2 border border-gray-300 rounded-md */
+            width: 100%; /* w-full */
+            padding: 0.5rem; /* p-2 */
+            border: 1px solid #cbd5e0; /* border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+
+        hr {
+            border-top-width: 1px;
+            border-color: #93c5fd; /* border-blue-300 */
+            margin-top: 1rem; /* my-4 */
+            margin-bottom: 1rem; /* my-4 */
+        }
+
+        .checkbox-group { /* Replaces flex items-center space-x-3 */
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* space-x-3 */
+        }
+
+        .checkbox-group input[type="checkbox"] { /* Replaces form-checkbox h-5 w-5 text-indigo-600 rounded */
+            height: 1.25rem; /* h-5 */
+            width: 1.25rem; /* w-5 */
+            color: #4f46e5; /* text-indigo-600 */
+            border-radius: 0.25rem; /* rounded */
+        }
+
+        .checkbox-group label { /* Replaces text-gray-700 font-medium */
+            color: #4a5568; /* text-gray-700 */
+            font-weight: 500; /* font-medium */
+        }
+
+        .button-group { /* Replaces flex flex-col space-y-3 pt-4 */
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem; /* space-y-3 */
+            padding-top: 1rem; /* pt-4 */
+        }
+
+        button {
+            transition: all 0.3s ease;
+            color: #ffffff; /* text-white */
+            font-weight: 700; /* font-bold */
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            width: 100%; /* w-full (added for consistency) */
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        /* Specific button colors */
+        #drawLinesBtn {
+            background-color: #4f46e5; /* bg-indigo-600 */
+        }
+        #drawLinesBtn:hover {
+            background-color: #4338ca; /* hover:bg-indigo-700 */
+        }
+
+        #clearCanvasBtn {
+            background-color: #ef4444; /* bg-red-500 */
+        }
+        #clearCanvasBtn:hover {
+            background-color: #dc2626; /* hover:bg-red-600 */
+        }
+
+        /* Canvas & Output Section */
+        .canvas-output-section { /* Replaces flex flex-col items-center justify-center border border-gray-300 rounded-xl p-4 bg-gray-50 shadow-md */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1rem; /* p-4 */
+            background-color: #f9fafb; /* bg-gray-50 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            width: 100%; /* w-full */
+            height: auto; /* h-auto */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+
+        .canvas-caption { /* Replaces text-gray-600 mt-2 text-sm */
+            color: #4b5563; /* text-gray-600 */
+            margin-top: 0.5rem; /* mt-2 */
+            font-size: 0.875rem; /* text-sm */
+        }
+
+        #outputLog {
+            margin-top: 1rem; /* mt-4 */
+            padding: 0.75rem; /* p-3 */
+            background-color: #f3f4f6; /* bg-gray-100 */
+            border: 1px solid #e5e7eb; /* border-gray-200 */
+            border-radius: 0.375rem; /* rounded-md */
+            font-size: 0.875rem; /* text-sm */
+            color: #374151; /* text-gray-700 */
+            overflow: auto; /* overflow-auto */
+            height: 6rem; /* h-24 */
+            width: 100%; /* w-full */
+        }
+    </style>
+</head>
+<body class="bg-pink-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="container">
+        <h1>Visualisasi Antialiasing Garis</h1>
+
+        <div class="grid-container">
+            <div class="controls-section">
+                <h2>Pengaturan Visualisasi</h2>
+
+                <div class="section-group">
+                    <h3>Koordinat Garis (x1, y1, x2, y2)</h3>
+                    <div class="input-grid-2">
+                        <div class="input-field-group">
+                            <label for="x1">X1:</label>
+                            <input type="number" id="x1" value="50">
+                        </div>
+                        <div class="input-field-group">
+                            <label for="y1">Y1:</label>
+                            <input type="number" id="y1" value="50">
+                        </div>
+                        <div class="input-field-group">
+                            <label for="x2">X2:</label>
+                            <input type="number" id="x2" value="350">
+                        </div>
+                        <div class="input-field-group">
+                            <label for="y2">Y2:</label>
+                            <input type="number" id="y2" value="150">
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableAntialiasing" checked>
+                    <label for="enableAntialiasing">Aktifkan Antialiasing</label>
+                </div>
+
+                <div class="button-group">
+                    <button id="drawLinesBtn">
+                        Gambar Garis
+                    </button>
+                    <button id="clearCanvasBtn">
+                        Hapus Kanvas
+                    </button>
+                </div>
+            </div>
+
+            <div class="canvas-output-section">
+                <canvas id="antialiasingCanvas" width="400" height="400"></canvas>
+                <p class="canvas-caption">Garis asli (tanpa AA) vs. garis anti-alias.</p>
+                <div id="outputLog">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('antialiasingCanvas');
+        const ctx = canvas.getContext('2d');
+        const outputLog = document.getElementById('outputLog');
+
+        const x1Input = document.getElementById('x1');
+        const y1Input = document.getElementById('y1');
+        const x2Input = document.getElementById('x2');
+        const y2Input = document.getElementById('y2');
+        const enableAntialiasingCheckbox = document.getElementById('enableAntialiasing');
+        const drawLinesBtn = document.getElementById('drawLinesBtn');
+        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+
+        /**
+         * Clears the canvas and the output log.
+         */
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            outputLog.innerHTML = '';
+            logMessage('Kanvas dibersihkan.');
+        }
+
+        /**
+         * Logs a message to the output log.
+         * @param {string} message - The message to log.
+         * @param {string} color - The color of the text.
+         */
+        function logMessage(message, color = 'black') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = color;
+            outputLog.appendChild(p);
+            outputLog.scrollTop = outputLog.scrollHeight;
+        }
+
+        /**
+         * Draws a line on the canvas.
+         * For antialiasing, it manually calculates pixel intensities.
+         * For aliasing, it uses standard line drawing.
+         * @param {number} x1 - Start X coordinate.
+         * @param {number} y1 - Start Y coordinate.
+         * @param {number} x2 - End X coordinate.
+         * @param {number} y2 - End Y coordinate.
+         * @param {boolean} antialiased - Whether to apply antialiasing.
+         */
+        function drawLine(x1, y1, x2, y2, antialiased) {
+            if (!antialiased) {
+                // Simple aliased line (jagged)
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 1; // 1 pixel wide line
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+                logMessage('Menggambar garis tanpa antialiasing (aliased).', 'red');
+            } else {
+                // Basic Antialiasing (simulating with transparency)
+                // This is a simplified approach to demonstrate the concept,
+                // not a full sub-pixel rendering implementation.
+                logMessage('Menggambar garis dengan antialiasing (simulasi).', 'green');
+
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const steps = Math.max(Math.abs(dx), Math.abs(dy));
+
+                if (steps === 0) { // Handle single point case
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(x1, y1, 1, 1);
+                    return;
+                }
+
+                const xIncrement = dx / steps;
+                const yIncrement = dy / steps;
+
+                let currentX = x1;
+                let currentY = y1;
+
+                // Draw the main line path with full opacity
+                ctx.strokeStyle = 'rgba(0, 0, 0, 1)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+
+                // Simulate antialiasing by drawing semi-transparent pixels around the main line
+                // This creates a "blur" effect that smooths jagged edges.
+                // This is a very basic demonstration; real antialiasing is more complex (e.g., FSAA, MSAA, FXAA).
+                for (let i = 0; i <= steps; i++) {
+                    const plotX = Math.round(currentX); // Round to nearest pixel for main line
+                    const plotY = Math.round(currentY);
+
+                    // Iterate over surrounding pixels to apply transparency
+                    for (let ox = -1; ox <= 1; ox++) {
+                        for (let oy = -1; oy <= 1; oy++) {
+                            // Skip the exact center pixel, as it's covered by the main line stroke
+                            if (ox === 0 && oy === 0) continue;
+
+                            const pixelCenterX = plotX + ox + 0.5;
+                            const pixelCenterY = plotY + oy + 0.5;
+
+                            // Calculate distance from the current point on the ideal line to the center of the surrounding pixel
+                            const dist = Math.sqrt(
+                                Math.pow(pixelCenterX - (currentX + 0.5), 2) +
+                                Math.pow(pixelCenterY - (currentY + 0.5), 2)
+                            );
+
+                            // Calculate alpha based on distance. Closer pixels are more opaque.
+                            // The '0.8' is a tuning factor for the falloff.
+                            const alpha = Math.max(0, 1 - dist * 0.8);
+
+                            if (alpha > 0) { // Only draw if there's some opacity
+                                ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.5})`; // Make side pixels semi-transparent (adjust 0.5 for overall fade)
+                                ctx.fillRect(plotX + ox, plotY + oy, 1, 1);
+                            }
+                        }
+                    }
+
+                    currentX += xIncrement;
+                    currentY += yIncrement;
+                }
+            }
+        }
+
+
+        /**
+         * Main function to draw lines based on current settings.
+         */
+        function handleDrawLines() {
+            clearCanvas(); // Clear before drawing new lines
+
+            const x1 = parseFloat(x1Input.value);
+            const y1 = parseFloat(y1Input.value);
+            const x2 = parseFloat(x2Input.value);
+            const y2 = parseFloat(y2Input.value);
+            const antialiased = enableAntialiasingCheckbox.checked;
+
+            if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+                logMessage('Error: Masukkan koordinat garis yang valid.', 'red');
+                return;
+            }
+
+            // Draw the line
+            drawLine(x1, y1, x2, y2, antialiased);
+        }
+
+        // Event Listeners
+        drawLinesBtn.addEventListener('click', handleDrawLines);
+        clearCanvasBtn.addEventListener('click', clearCanvas);
+
+        // Draw initial line on load
+        window.addEventListener('load', handleDrawLines);
+    </script>
+</body>
+</html>

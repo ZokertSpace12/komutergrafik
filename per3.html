@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi Algoritma Garis</title>
+    <style>
+        /* Base styles from Tailwind's preflight and common utilities */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb; /* gray-200 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            line-height: inherit;
+            background-color: #fce7f3; /* bg-pink-100 */
+            padding: 1rem; /* p-4 */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Container styling */
+        .max-w-4xl {
+            max-width: 56rem; /* Equivalent to 900px, common for max-w-4xl */
+        }
+        .w-full {
+            width: 100%;
+        }
+        .bg-white {
+            background-color: #fff;
+        }
+        .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .rounded-lg {
+            border-radius: 0.5rem;
+        }
+        .p-6 {
+            padding: 1.5rem;
+        }
+        .md\:p-8 {
+            padding: 2rem; /* On medium screens and up */
+        }
+        .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 2rem;
+            margin-bottom: 0;
+        }
+
+        /* Heading styles */
+        .text-3xl {
+            font-size: 1.875rem; /* 30px */
+            line-height: 2.25rem; /* 36px */
+        }
+        .md\:text-4xl {
+            font-size: 2.25rem; /* 36px */
+            line-height: 2.5rem; /* 40px */
+        }
+        .font-extrabold {
+            font-weight: 800;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-gray-800 {
+            color: #1f2937;
+        }
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Grid layout */
+        .grid {
+            display: grid;
+        }
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+        .md\:grid-cols-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr)); /* On medium screens and up */
+        }
+        .gap-6 {
+            gap: 1.5rem;
+        }
+
+        /* Input section styling */
+        .border {
+            border-width: 1px;
+        }
+        .border-blue-200 {
+            border-color: #bfdbfe;
+        }
+        .rounded-xl {
+            border-radius: 0.75rem;
+        }
+        .p-4 {
+            padding: 1rem;
+        }
+        .bg-blue-50 {
+            background-color: #eff6ff;
+        }
+        .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .text-2xl {
+            font-size: 1.5rem; /* 24px */
+            line-height: 2rem; /* 32px */
+        }
+        .font-bold {
+            font-weight: 700;
+        }
+        .text-blue-700 {
+            color: #1d4ed8;
+        }
+        .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 1rem;
+            margin-bottom: 0;
+        }
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+        .block {
+            display: block;
+        }
+        .text-gray-700 {
+            color: #374151;
+        }
+        .font-medium {
+            font-weight: 500;
+        }
+        .mb-1 {
+            margin-bottom: 0.25rem;
+        }
+        .flex {
+            display: flex;
+        }
+        .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+            margin-right: 0;
+            margin-left: 0.5rem;
+        }
+        .w-1\/2 {
+            width: 50%;
+        }
+        .p-2 {
+            padding: 0.5rem;
+        }
+        .border-gray-300 {
+            border-color: #d1d5db;
+        }
+        .rounded-md {
+            border-radius: 0.375rem;
+        }
+        .focus\:ring-blue-500:focus {
+            /* --tw-ring-color: #3b82f6; Ini adalah variabel Tailwind, perlu diganti */
+            /* box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow); Ini juga variabel Tailwind */
+
+            /* Ganti dengan box-shadow yang mensimulasikan 'ring' */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* 3px ring dengan warna blue-500 dan sedikit transparansi */
+            outline: 2px solid transparent; /* Untuk menjaga konsistensi dengan default browser dan Tailwind */
+            outline-offset: 2px; /* Untuk menjaga konsistensi */
+
+            /* Properti ring-color, ring-offset-color, ring-offset-width, ring-width tidak relevan lagi tanpa variabel Tailwind */
+            /* ring-color: var(--tw-ring-color); */
+            /* ring-offset-color: var(--tw-ring-offset-color); */
+            /* ring-offset-width: var(--tw-ring-offset-width); */
+            /* ring-width: var(--tw-ring-width); */
+        }
+        .focus\:border-blue-500:focus {
+            border-color: #3b82f6;
+        }
+        .flex-col {
+            flex-direction: column;
+        }
+        .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0.75rem;
+            margin-bottom: 0;
+        }
+        .pt-4 {
+            padding-top: 1rem;
+        }
+
+        /* Button styling */
+        button {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 0.5rem; /* rounded-lg */
+            padding-top: 0.5rem; /* py-2 */
+            padding-bottom: 0.5rem;
+            padding-left: 1rem; /* px-4 */
+            padding-right: 1rem;
+            font-weight: 700; /* font-bold */
+            color: #fff; /* text-white */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .bg-blue-600 {
+            background-color: #2563eb;
+        }
+        .hover\:bg-blue-700:hover {
+            background-color: #1d4ed8;
+        }
+
+        .bg-green-600 {
+            background-color: #059669;
+        }
+        .hover\:bg-green-700:hover {
+            background-color: #047857;
+        }
+
+        .bg-purple-600 {
+            background-color: #9333ea;
+        }
+        .hover\:bg-purple-700:hover {
+            background-color: #7c3aed;
+        }
+
+        .bg-red-500 {
+            background-color: #ef4444;
+        }
+        .hover\:bg-red-600:hover {
+            background-color: #dc2626;
+        }
+
+        /* Canvas section styling */
+        .items-center {
+            align-items: center;
+        }
+        .justify-center {
+            justify-content: center;
+        }
+        .border-gray-300 {
+            border-color: #d1d5db;
+        }
+        .bg-gray-50 {
+            background-color: #f9fafb;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            width: 100%; /* w-full */
+            height: auto; /* h-auto */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+        .text-gray-600 {
+            color: #4b5563;
+        }
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+        .text-sm {
+            font-size: 0.875rem; /* 14px */
+            line-height: 1.25rem; /* 20px */
+        }
+        .mt-4 {
+            margin-top: 1rem;
+        }
+        .p-3 {
+            padding: 0.75rem;
+        }
+        .bg-gray-100 {
+            background-color: #f3f4f6;
+        }
+        .border-gray-200 {
+            border-color: #e5e7eb;
+        }
+        .text-gray-700 {
+            color: #374151;
+        }
+        .overflow-auto {
+            overflow: auto;
+        }
+        .h-24 {
+            height: 6rem; /* 96px */
+        }
+    </style>
+</head>
+<body class="bg-pink-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="max-w-4xl w-full bg-white shadow-lg rounded-lg p-6 md:p-8 space-y-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6">
+            Visualisasi Algoritma Garis
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4 border border-blue-200 rounded-xl p-4 bg-blue-50 shadow-md">
+                <h2 class="text-2xl font-bold text-blue-700 mb-4">Input Titik</h2>
+                <div>
+                    <label for="x1" class="block text-gray-700 font-medium mb-1">Titik A (x1, y1):</label>
+                    <div class="flex space-x-2">
+                        <input type="number" id="x1" value="3" class="w-1/2 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        <input type="number" id="y1" value="2" class="w-1/2 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                <div>
+                    <label for="x2" class="block text-gray-700 font-medium mb-1">Titik B (x2, y2):</label>
+                    <div class="flex space-x-2">
+                        <input type="number" id="x2" value="11" class="w-1/2 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        <input type="number" id="y2" value="6" class="w-1/2 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                <div class="flex flex-col space-y-3 pt-4">
+                    <button id="drawBruteForce" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Gambar Garis (Brute Force)
+                    </button>
+                    <button id="drawDDA" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Gambar Garis (DDA)
+                    </button>
+                    <button id="drawBresenham" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Gambar Garis (Bresenham)
+                    </button>
+                    <button id="clearCanvas" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Hapus Kanvas
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center justify-center border border-gray-300 rounded-xl p-4 bg-gray-50 shadow-md">
+                <canvas id="lineCanvas" width="400" height="400" class="w-full h-auto rounded-md"></canvas>
+                <p class="text-gray-600 mt-2 text-sm">Output algoritma akan ditampilkan di sini.</p>
+                <div id="outputLog" class="mt-4 p-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-700 overflow-auto h-24 w-full">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('lineCanvas');
+        const ctx = canvas.getContext('2d');
+        const x1Input = document.getElementById('x1');
+        const y1Input = document.getElementById('y1');
+        const x2Input = document.getElementById('x2');
+        const y2Input = document.getElementById('y2');
+        const drawBruteForceBtn = document.getElementById('drawBruteForce');
+        const drawDDABtn = document.getElementById('drawDDA');
+        const drawBresenhamBtn = document.getElementById('drawBresenham');
+        const clearCanvasBtn = document.getElementById('clearCanvas');
+        const outputLog = document.getElementById('outputLog');
+
+        // Scaling factor for better visualization on canvas
+        const SCALE = 20;
+        const OFFSET_X = 50; // Offset to center the drawing area slightly
+        const OFFSET_Y = canvas.height - 50; // Offset for Y-axis (canvas Y is inverted)
+
+        /**
+         * Clears the canvas and the output log.
+         */
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            outputLog.innerHTML = '';
+            drawGrid(); // Redraw grid after clearing
+        }
+
+        /**
+         * Logs a message to the output log.
+         * @param {string} message - The message to log.
+         * @param {string} color - The color of the text (e.g., 'blue', 'green', 'purple').
+         */
+        function logMessage(message, color = 'black') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = color;
+            outputLog.appendChild(p);
+            outputLog.scrollTop = outputLog.scrollHeight; // Auto-scroll to bottom
+        }
+
+        /**
+         * Draws a pixel on the canvas, adjusting for scaling and inverted Y-axis.
+         * @param {number} x - X coordinate.
+         * @param {number} y - Y coordinate.
+         * @param {string} color - Color of the pixel.
+         */
+        function drawPixel(x, y, color) {
+            ctx.fillStyle = color;
+            // Adjust coordinates for canvas system (Y-axis inverted, scaling)
+            const canvasX = x * SCALE + OFFSET_X;
+            const canvasY = OFFSET_Y - (y * SCALE); // Invert Y and apply offset
+
+            ctx.fillRect(canvasX, canvasY, SCALE, SCALE); // Draw a square pixel
+            ctx.strokeStyle = '#333';
+            ctx.strokeRect(canvasX, canvasY, SCALE, SCALE); // Outline pixel
+        }
+
+        /**
+         * Draws the coordinate grid on the canvas.
+         */
+        function drawGrid() {
+            ctx.strokeStyle = '#e0e0e0'; // Light gray for grid lines
+            ctx.lineWidth = 0.5;
+
+            // Draw vertical lines
+            for (let x = OFFSET_X; x <= canvas.width - OFFSET_X; x += SCALE) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            // Draw horizontal lines
+            for (let y = OFFSET_Y; y >= OFFSET_Y - canvas.height; y -= SCALE) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Draw axis labels (simple for now)
+            ctx.fillStyle = '#666';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // X-axis labels
+            for (let x = 0; x <= (canvas.width - OFFSET_X) / SCALE; x += 1) {
+                ctx.fillText(x, x * SCALE + OFFSET_X + SCALE / 2, OFFSET_Y + 15);
+            }
+            // Y-axis labels
+            for (let y = 0; y <= (OFFSET_Y) / SCALE; y += 1) {
+                ctx.fillText(y, OFFSET_X - 15, OFFSET_Y - (y * SCALE) - SCALE / 2);
+            }
+        }
+
+
+        /**
+         * Implements the Brute Force Line Drawing Algorithm.
+         * (Based on the provided PDF: y = m(x-x1) + y1)
+         * Handles both m < 1 and m > 1 cases, by adapting based on slope.
+         */
+        function drawLineBruteForce() {
+            clearCanvas();
+            const x1 = parseInt(x1Input.value);
+            const y1 = parseInt(y1Input.value);
+            const x2 = parseInt(x2Input.value);
+            const y2 = parseInt(y2Input.value);
+
+            logMessage(`--- Menggambar Garis dengan Brute Force dari (${x1},${y1}) ke (${x2},${y2}) ---`, 'blue');
+
+            let points = [];
+
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+
+            // Handle vertical line
+            if (dx === 0) {
+                for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
+                    points.push([x1, y]);
+                    drawPixel(x1, y, 'red');
+                }
+                logMessage(`Titik-titik yang digambar: ${JSON.stringify(points)}`, 'blue');
+                return;
+            }
+
+            // Handle horizontal line
+            if (dy === 0) {
+                for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
+                    points.push([x, y1]);
+                    drawPixel(x, y1, 'red');
+                }
+                logMessage(`Titik-titik yang digambar: ${JSON.stringify(points)}`, 'blue');
+                return;
+            }
+
+            const m = dy / dx;
+
+            if (Math.abs(m) <= 1) { // Iterate along X-axis
+                const startX = dx > 0 ? x1 : x2;
+                const endX = dx > 0 ? x2 : x1;
+                const startY = dx > 0 ? y1 : y2;
+
+                for (let x = startX; x <= endX; x++) {
+                    const y = m * (x - startX) + startY;
+                    const roundedY = Math.round(y);
+                    points.push([x, roundedY]);
+                    drawPixel(x, roundedY, 'red');
+                }
+            } else { // Iterate along Y-axis (for m > 1 or m < -1)
+                const startY = dy > 0 ? y1 : y2;
+                const endY = dy > 0 ? y2 : y1;
+                const startX = dy > 0 ? x1 : x2;
+                const invM = 1 / m; // 1/m = (x2-x1)/(y2-y1)
+
+                for (let y = startY; y <= endY; y++) {
+                    const x = invM * (y - startY) + startX;
+                    const roundedX = Math.round(x);
+                    points.push([roundedX, y]);
+                    drawPixel(roundedX, y, 'red');
+                }
+            }
+            logMessage(`Titik-titik yang digambar: ${JSON.stringify(points)}`, 'blue');
+        }
+
+        /**
+         * Implements the Digital Differential Analyzer (DDA) Line Drawing Algorithm.
+         */
+        function drawLineDDA() {
+            clearCanvas();
+            let x1 = parseInt(x1Input.value);
+            let y1 = parseInt(y1Input.value);
+            let x2 = parseInt(x2Input.value);
+            let y2 = parseInt(y2Input.value);
+
+            logMessage(`--- Menggambar Garis dengan DDA dari (${x1},${y1}) ke (${x2},${y2}) ---`, 'green');
+
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+
+            let steps;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                steps = Math.abs(dx);
+            } else {
+                steps = Math.abs(dy);
+            }
+
+            const xIncrement = dx / steps;
+            const yIncrement = dy / steps;
+
+            let currentX = parseFloat(x1);
+            let currentY = parseFloat(y1);
+
+            let points = [];
+
+            for (let i = 0; i <= steps; i++) {
+                const plotX = Math.round(currentX);
+                const plotY = Math.round(currentY);
+                points.push([plotX, plotY]);
+                drawPixel(plotX, plotY, 'blue');
+
+                currentX += xIncrement;
+                currentY += yIncrement;
+            }
+            logMessage(`Titik-titik yang digambar: ${JSON.stringify(points)}`, 'green');
+        }
+
+        /**
+         * Implements the Bresenham Line Drawing Algorithm for 0 < m < 1.
+         * (Simplified for the primary case as per PDF, but adapted to handle general case)
+         */
+        function drawLineBresenham() {
+            clearCanvas();
+            let x1 = parseInt(x1Input.value);
+            let y1 = parseInt(y1Input.value);
+            let x2 = parseInt(x2Input.value);
+            let y2 = parseInt(y2Input.value);
+
+            logMessage(`--- Menggambar Garis dengan Bresenham dari (${x1},${y1}) ke (${x2},${y2}) ---`, 'purple');
+
+            let points = [];
+
+            // Determine if the line needs to be mirrored or transposed to fit the 0 <= m <= 1 octant
+            let inverted = false; // Tracks if x and y were swapped
+            let reversed = false; // Tracks if start and end points were swapped
+
+            if (Math.abs(y2 - y1) > Math.abs(x2 - x1)) {
+                // Swap x and y if slope > 1 or < -1 (y-major)
+                [x1, y1] = [y1, x1];
+                [x2, y2] = [y2, x2];
+                inverted = true;
+            }
+
+            if (x1 > x2) {
+                // Swap start and end points if x1 > x2
+                [x1, x2] = [x2, x1];
+                [y1, y2] = [y2, y1];
+                reversed = true;
+            }
+
+            let dx = x2 - x1;
+            let dy = Math.abs(y2 - y1);
+            let yStep = (y1 < y2) ? 1 : -1;
+
+            let p = 2 * dy - dx;
+            let currentX = x1;
+            let currentY = y1;
+
+            for (let i = 0; i <= dx; i++) {
+                if (inverted) {
+                    points.push([currentY, currentX]); // Swap back for storage
+                    drawPixel(currentY, currentX, 'purple'); // Draw original (x,y)
+                } else {
+                    points.push([currentX, currentY]);
+                    drawPixel(currentX, currentY, 'purple');
+                }
+
+                if (p < 0) {
+                    p += 2 * dy;
+                } else {
+                    p += 2 * dy - 2 * dx;
+                    currentY += yStep;
+                }
+                currentX++;
+            }
+            
+            // If the line was drawn from right to left, reverse the points for correct order
+            if (reversed) {
+                points.reverse();
+            }
+
+            logMessage(`Titik-titik yang digambar: ${JSON.stringify(points)}`, 'purple');
+        }
+
+
+        // Event Listeners for buttons
+        drawBruteForceBtn.addEventListener('click', drawLineBruteForce);
+        drawDDABtn.addEventListener('click', drawLineDDA);
+        drawBresenhamBtn.addEventListener('click', drawLineBresenham);
+        clearCanvasBtn.addEventListener('click', clearCanvas);
+
+        // Initial draw of the grid
+        drawGrid();
+    </script>
+</body>
+</html>

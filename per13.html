@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Pengolahan Citra Digital Sederhana</title>
+    <style>
+        /* Custom font for a clean look */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fce4ec; /* bg-pink-100 */
+            padding: 1rem; /* p-4 */
+            min-height: 100vh; /* min-h-screen */
+            display: flex; /* flex */
+            align-items: center; /* items-center */
+            justify-content: center; /* justify-center */
+        }
+
+        .container {
+            max-width: 64rem; /* max-w-4xl */
+            width: 100%; /* w-full */
+            background-color: #ffffff; /* bg-white */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 1.5rem; /* p-6 */
+            display: flex; /* flex */
+            flex-direction: column; /* flex-col */
+            gap: 2rem; /* space-y-8 */
+        }
+
+        @media (min-width: 768px) { /* md:p-8 */
+            .container {
+                padding: 2rem;
+            }
+        }
+
+        h1 {
+            font-size: 2.25rem; /* text-3xl */
+            line-height: 2.5rem;
+            font-weight: 800; /* font-extrabold */
+            text-align: center; /* text-center */
+            color: #1a202c; /* text-gray-800 */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+
+        @media (min-width: 768px) { /* md:text-4xl */
+            h1 {
+                font-size: 2.5rem;
+                line-height: 1;
+            }
+        }
+
+        .grid-container { /* Replaces grid grid-cols-1 md:grid-cols-2 gap-6 */
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem; /* gap-6 */
+        }
+
+        @media (min-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .controls-section { /* Replaces space-y-6 border border-blue-200 rounded-xl p-4 bg-blue-50 shadow-md */
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* space-y-6 */
+            border: 1px solid #bfdbfe; /* border-blue-200 */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1rem; /* p-4 */
+            background-color: #eff6ff; /* bg-blue-50 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+
+        h2 {
+            font-size: 1.5rem; /* text-2xl */
+            line-height: 2rem;
+            font-weight: 700; /* font-bold */
+            color: #1d4ed8; /* text-blue-700 */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+
+        .input-group-file { /* Specific style for file input div */
+            margin-bottom: 1rem; /* mb-1 */
+        }
+        .input-group-file label { /* block text-gray-700 font-medium mb-1 */
+            display: block;
+            color: #4a5568;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        .input-group-file input[type="file"] { /* w-full p-2 border border-gray-300 rounded-md bg-white */
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.375rem;
+            background-color: #ffffff;
+        }
+        .input-group-file .help-text { /* text-sm text-gray-500 mt-1 */
+            font-size: 0.875rem;
+            color: #718096;
+            margin-top: 0.25rem;
+        }
+
+        hr { /* border-blue-300 my-4 */
+            border-top: 1px solid #93c5fd;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .enhancement-group { /* Replaces space-y-3 */
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem; /* space-y-3 */
+        }
+
+        h3 {
+            font-size: 1.25rem; /* text-xl */
+            line-height: 1.75rem;
+            font-weight: 600; /* font-semibold */
+            color: #2563eb; /* text-blue-600 */
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+            color: #4a5568; /* gray-700 */
+        }
+        .input-group input[type="range"] {
+            width: 100%;
+            height: 8px;
+            background: #cbd5e0; /* gray-300 */
+            border-radius: 4px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4a5568; /* gray-700 */
+            cursor: grab;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4a5568; /* gray-700 */
+            cursor: grab;
+        }
+
+        button {
+            transition: all 0.3s ease;
+            width: 100%; /* w-full */
+            color: #ffffff; /* text-white */
+            font-weight: 700; /* font-bold */
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        #applyEnhancementBtn { /* bg-indigo-600 hover:bg-indigo-700 */
+            background-color: #4f46e5;
+        }
+        #applyEnhancementBtn:hover {
+            background-color: #4338ca;
+        }
+
+        #applyGrayscaleBtn { /* bg-purple-600 hover:bg-purple-700 */
+            background-color: #7c3aed;
+        }
+        #applyGrayscaleBtn:hover {
+            background-color: #6d28d9;
+        }
+
+        #resetImageBtn { /* bg-red-500 hover:bg-red-600 mt-6 */
+            background-color: #ef4444;
+            margin-top: 1.5rem;
+        }
+        #resetImageBtn:hover {
+            background-color: #dc2626;
+        }
+
+        /* Canvas & Output Section */
+        .canvas-output-section { /* flex flex-col items-center justify-center border border-gray-300 rounded-xl p-4 bg-gray-50 shadow-md */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            background-color: #f9fafb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #e0e0e0; /* Light gray for empty canvas */
+            width: 100%; /* w-full */
+            height: auto; /* h-auto */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+
+        .canvas-caption { /* text-gray-600 mt-2 text-sm */
+            color: #4b5563;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        #outputLog { /* mt-4 p-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-700 overflow-auto h-24 w-full */
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            color: #374151;
+            overflow: auto;
+            height: 6rem;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-pink-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="container">
+        <h1>Aplikasi Pengolahan Citra Digital Sederhana</h1>
+
+        <div class="grid-container">
+            <div class="controls-section">
+                <h2>Pengaturan Citra</h2>
+
+                <div class="input-group-file">
+                    <label for="imageUpload">Unggah Gambar:</label>
+                    <input type="file" id="imageUpload" accept="image/*">
+                    <p class="help-text">Unggah file gambar (JPG, PNG, dll).</p>
+                </div>
+
+                <hr>
+
+                <div class="enhancement-group">
+                    <h3>Peningkatan Citra (Enhancement)</h3>
+                    <div class="input-group">
+                        <label for="brightness">Kecerahan: <span id="brightnessValue">0</span></label>
+                        <input type="range" id="brightness" min="-100" max="100" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="contrast">Kontras: <span id="contrastValue">0</span></label>
+                        <input type="range" id="contrast" min="-100" max="100" value="0">
+                    </div>
+                    <button id="applyEnhancementBtn">
+                        Terapkan Peningkatan
+                    </button>
+                </div>
+
+                <hr>
+
+                <div>
+                    <h3>Konversi Grayscale</h3>
+                    <button id="applyGrayscaleBtn">
+                        Ubah ke Grayscale
+                    </button>
+                </div>
+
+                <button id="resetImageBtn">
+                    Reset Gambar Asli
+                </button>
+            </div>
+
+            <div class="canvas-output-section">
+                <canvas id="imageCanvas" width="400" height="400"></canvas>
+                <p class="canvas-caption">Gambar hasil olahan akan ditampilkan di sini.</p>
+                <div id="outputLog">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('imageCanvas');
+        const ctx = canvas.getContext('2d');
+        const outputLog = document.getElementById('outputLog');
+
+        const imageUploadInput = document.getElementById('imageUpload');
+        const brightnessInput = document.getElementById('brightness');
+        const brightnessValueSpan = document.getElementById('brightnessValue');
+        const contrastInput = document.getElementById('contrast');
+        const contrastValueSpan = document.getElementById('contrastValue');
+        const applyEnhancementBtn = document.getElementById('applyEnhancementBtn');
+        const applyGrayscaleBtn = document.getElementById('applyGrayscaleBtn');
+        const resetImageBtn = document.getElementById('resetImageBtn');
+
+        let originalImage = new Image();
+        let currentImageData = null; // Stores ImageData object for manipulation
+
+        /**
+         * Logs a message to the output log.
+         * @param {string} message - The message to log.
+         * @param {string} color - The color of the text.
+         */
+        function logMessage(message, color = 'black') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = color;
+            outputLog.appendChild(p);
+            outputLog.scrollTop = outputLog.scrollHeight; // Auto-scroll to bottom
+        }
+
+        /**
+         * Loads an image from the file input and draws it to the canvas.
+         * Stores the original image data.
+         * @param {Event} event - The file input change event.
+         */
+        function loadImage(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                originalImage.onload = function() {
+                    // Set canvas size to match image aspect ratio, max 400x400
+                    const maxWidth = 400;
+                    const maxHeight = 400;
+                    let width = originalImage.width;
+                    let height = originalImage.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = height * (maxWidth / width);
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = width * (maxHeight / height);
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+                    currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height); // Store original image data
+
+                    // Reset sliders and values
+                    brightnessInput.value = 0;
+                    contrastInput.value = 0;
+                    brightnessValueSpan.textContent = 0;
+                    contrastValueSpan.textContent = 0;
+
+                    logMessage('Gambar berhasil diunggah dan ditampilkan.', 'green');
+                };
+                originalImage.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /**
+         * Applies brightness and contrast adjustments to the image data.
+         * This function operates on a copy of the current image data to allow chaining.
+         * @param {ImageData} imageData - The ImageData object to modify.
+         * @param {number} brightness - Brightness adjustment value (-100 to 100).
+         * @param {number} contrast - Contrast adjustment value (-100 to 100).
+         * @returns {ImageData} - The modified ImageData object.
+         */
+        function applyBrightnessContrast(imageData, brightness, contrast) {
+            const data = imageData.data;
+            const newImageData = ctx.createImageData(imageData.width, imageData.height);
+            const newData = newImageData.data;
+
+            // Convert brightness and contrast to multipliers
+            // Brightness: add value to each pixel component
+            // Contrast: scale value from 0-255 after shifting midpoint to 0
+            const brightnessFactor = brightness; // Direct addition
+            const contrastFactor = (contrast / 100) + 1; // 0 to 2, 1 means no change
+
+            for (let i = 0; i < data.length; i += 4) {
+                // Apply brightness first
+                let r = data[i];
+                let g = data[i + 1];
+                let b = data[i + 2];
+
+                r += brightnessFactor;
+                g += brightnessFactor;
+                b += brightnessFactor;
+
+                // Apply contrast
+                // Shift to 0-centered range, apply contrast, shift back
+                r = (r - 128) * contrastFactor + 128;
+                g = (g - 128) * contrastFactor + 128;
+                b = (b - 128) * contrastFactor + 128;
+
+                // Clamp values to [0, 255]
+                newData[i] = Math.min(255, Math.max(0, r));
+                newData[i + 1] = Math.min(255, Math.max(0, g));
+                newData[i + 2] = Math.min(255, Math.max(0, b));
+                newData[i + 3] = data[i + 3]; // Alpha channel remains unchanged
+            }
+            return newImageData;
+        }
+
+        /**
+         * Converts the image data to grayscale.
+         * @param {ImageData} imageData - The ImageData object to modify.
+         * @returns {ImageData} - The modified ImageData object.
+         */
+        function applyGrayscale(imageData) {
+            const data = imageData.data;
+            const newImageData = ctx.createImageData(imageData.width, imageData.height);
+            const newData = newImageData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                // Formula for grayscale: Y = 0.299*R + 0.587*G + 0.114*B
+                const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                newData[i] = gray;     // Red
+                newData[i + 1] = gray; // Green
+                newData[i + 2] = gray; // Blue
+                newData[i + 3] = data[i + 3]; // Alpha
+            }
+            return newImageData;
+        }
+
+        /**
+         * Renders the image data back to the canvas.
+         * @param {ImageData} imageData - The ImageData object to draw.
+         */
+        function renderImageData(imageData) {
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        /**
+         * Handles applying brightness and contrast.
+         */
+        function handleApplyEnhancement() {
+            if (!currentImageData) {
+                logMessage('Mohon unggah gambar terlebih dahulu.', 'orange');
+                return;
+            }
+            logMessage('Menerapkan peningkatan citra...', 'blue');
+
+            const brightness = parseFloat(brightnessInput.value);
+            const contrast = parseFloat(contrastInput.value);
+
+            // Start with the original image data for each new operation
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+            const tempImageData = ctx.getImageData(0, 0, canvas.width, canvas.height); // Get a fresh copy from original image
+            
+            const enhancedImageData = applyBrightnessContrast(tempImageData, brightness, contrast);
+            renderImageData(enhancedImageData);
+
+            logMessage(`Kecerahan: ${brightness}, Kontras: ${contrast} diterapkan.`, 'green');
+        }
+
+        /**
+         * Handles applying grayscale conversion.
+         */
+        function handleApplyGrayscale() {
+            if (!currentImageData) {
+                logMessage('Mohon unggah gambar terlebih dahulu.', 'orange');
+                return;
+            }
+            logMessage('Mengubah gambar ke grayscale...', 'blue');
+            
+            // Start with the original image data for grayscale to ensure it's not cumulatively applied
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+            const tempImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+            const grayscaleImageData = applyGrayscale(tempImageData);
+            renderImageData(grayscaleImageData);
+            logMessage('Gambar berhasil diubah ke grayscale.', 'green');
+        }
+
+        /**
+         * Resets the canvas to display the original uploaded image.
+         */
+        function handleResetImage() {
+            if (!originalImage.src) {
+                logMessage('Tidak ada gambar asli untuk direset.', 'orange');
+                return;
+            }
+            logMessage('Mereset gambar ke kondisi asli...', 'blue');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+            currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height); // Refresh current data
+            // Reset sliders and values
+            brightnessInput.value = 0;
+            contrastInput.value = 0;
+            brightnessValueSpan.textContent = 0;
+            contrastValueSpan.textContent = 0;
+            logMessage('Gambar telah direset.', 'green');
+        }
+
+        // Event Listeners
+        imageUploadInput.addEventListener('change', loadImage);
+        brightnessInput.addEventListener('input', () => {
+            brightnessValueSpan.textContent = brightnessInput.value;
+            // For a real-time preview, uncomment the line below. 
+            // Be aware that continuous processing can be heavy for large images.
+            // handleApplyEnhancement(); 
+        });
+        contrastInput.addEventListener('input', () => {
+            contrastValueSpan.textContent = contrastInput.value;
+            // For a real-time preview, uncomment the line below. 
+            // Be aware that continuous processing can be heavy for large images.
+            // handleApplyEnhancement(); 
+        });
+        applyEnhancementBtn.addEventListener('click', handleApplyEnhancement);
+        applyGrayscaleBtn.addEventListener('click', handleApplyGrayscale);
+        resetImageBtn.addEventListener('click', handleResetImage);
+
+        // Initial log message
+        window.addEventListener('load', () => {
+            logMessage('Selamat datang! Unggah gambar untuk memulai.');
+        });
+    </script>
+</body>
+</html>

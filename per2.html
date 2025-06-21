@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konverter Warna RGB & HSV</title>
+    <style>
+        
+        /* Custom font for a clean look */
+        body{  
+            font-family: 'Inter', sans-serif;
+            background-color: #fce7f3; /* bg-pink-100 */
+            padding: 1rem; /* p-4 */
+            min-height: 100vh; /* min-h-screen */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+
+        .container {
+            max-width: 64rem; /* max-w-4xl */
+            width: 100%;
+            background-color: #ffffff; /* bg-white */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 1.5rem; /* p-6 */
+            margin-top: 2rem; /* Adjusted for overall spacing */
+            margin-bottom: 2rem; /* Adjusted for overall spacing */
+            display: flex;
+            flex-direction: column;
+            gap: 2rem; /* space-y-8 */
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding: 2rem; /* md:p-8 */
+            }
+        }
+
+        h1 {
+            font-size: 2.25rem; /* text-3xl */
+            line-height: 2.5rem; /* leading-9 */
+            font-weight: 800; /* font-extrabold */
+            text-align: center;
+            color: #2d3748; /* text-gray-800 */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2.5rem; /* md:text-4xl */
+                line-height: 1; /* md:leading-10 */
+            }
+        }
+
+        .section-box {
+            border: 1px solid #c3dafe; /* border-indigo-200 or border-teal-200 */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1.5rem; /* p-6 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+
+        .rgb-section-bg {
+            background-color: #e0e7ff; /* bg-indigo-50 */
+        }
+
+        .hsv-section-bg {
+            background-color: #e6fffa; /* bg-teal-50 */
+        }
+
+        h2 {
+            font-size: 1.5rem; /* text-2xl */
+            line-height: 2rem; /* leading-8 */
+            font-weight: 700; /* font-bold */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+
+        .rgb-h2-color {
+            color: #4338ca; /* text-indigo-700 */
+        }
+
+        .hsv-h2-color {
+            color: #0d9488; /* text-teal-700 */
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr; /* grid-cols-1 */
+            gap: 1.5rem; /* gap-6 */
+            align-items: center;
+        }
+
+        @media (min-width: 768px) {
+            .grid-layout {
+                grid-template-columns: repeat(2, 1fr); /* md:grid-cols-2 */
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem; /* space-y-4 */
+        }
+
+        .label-text {
+            display: block;
+            color: #4a5568; /* text-gray-700 */
+            font-weight: 500; /* font-medium */
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+
+        .value-span {
+            font-weight: 600; /* font-semibold */
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 0.5rem; /* h-2 */
+            border-radius: 0.5rem; /* rounded-lg */
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4A5568; /* Tailwind gray-700 */
+            cursor: grab;
+            box-shadow: 0 0 0 2px rgba(74, 85, 104, 0.5);
+            transition: background 0.15s ease-in-out;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4A5568; /* Tailwind gray-700 */
+            cursor: grab;
+            box-shadow: 0 0 0 2px rgba(74, 85, 104, 0.5);
+            transition: background 0.15s ease-in-out;
+        }
+        input[type="range"]:hover::-webkit-slider-thumb {
+            background: #2D3748; /* Tailwind gray-800 */
+        }
+        input[type="range"]:hover::-moz-range-thumb {
+            background: #2D3748; /* Tailwind gray-800 */
+        }
+
+        /* Specific range input backgrounds */
+        #red { background-color: #fca5a5; /* bg-red-300 */ }
+        #green { background-color: #a7f3d0; /* bg-green-300 */ }
+        #blue { background-color: #bfdbfe; /* bg-blue-300 */ }
+
+        #hue {
+            background: linear-gradient(to right, red, yellow, green, cyan, blue, magenta, red);
+        }
+        #saturation {
+            background: linear-gradient(to right, #ccc, var(--current-hue-color, #f00)); /* Placeholder, will be set by JS */
+        }
+        #value {
+            background: linear-gradient(to right, #000, #fff);
+        }
+
+        .convert-button {
+            width: 100%;
+            font-weight: 700; /* font-bold */
+            padding-top: 0.5rem; /* py-2 */
+            padding-bottom: 0.5rem;
+            padding-left: 1rem; /* px-4 */
+            padding-right: 1rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            transition-property: all; /* transition */
+            transition-duration: 300ms; /* duration-300 */
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* ease-in-out */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+
+        .convert-button:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* hover:shadow-lg */
+        }
+
+        #convertRgbToHsvBtn {
+            background-color: #4f46e5; /* bg-indigo-600 */
+            color: #ffffff; /* text-white */
+        }
+        #convertRgbToHsvBtn:hover {
+            background-color: #4338ca; /* hover:bg-indigo-700 */
+        }
+
+        #convertHsvToRgbBtn {
+            background-color: #0d9488; /* bg-teal-600 */
+            color: #ffffff; /* text-white */
+        }
+        #convertHsvToRgbBtn:hover {
+            background-color: #0f766e; /* hover:bg-teal-700 */
+        }
+
+        .color-display-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem; /* space-y-4 */
+        }
+
+        .color-box {
+            width: 8rem; /* w-32 */
+            height: 8rem; /* h-32 */
+            border-radius: 0.5rem; /* rounded-lg */
+            border: 4px solid #d1d5db; /* border-4 border-gray-300 */
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); /* shadow-inner */
+        }
+
+        @media (min-width: 768px) {
+            .color-box {
+                width: 12rem; /* md:w-48 */
+                height: 12rem; /* md:h-48 */
+            }
+        }
+
+        .color-box-label {
+            color: #4a5568; /* text-gray-700 */
+            font-weight: 600; /* font-semibold */
+            font-size: 1.125rem; /* text-lg */
+        }
+
+        .output-box {
+            background-color: #e0e7ff; /* bg-indigo-100 or bg-teal-100 */
+            padding: 1rem; /* p-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            width: 100%;
+            text-align: center;
+        }
+        .hsv-output-box {
+            background-color: #e0e7ff; /* bg-indigo-100 */
+        }
+        .rgb-output-box {
+            background-color: #e6fffa; /* bg-teal-100 */
+        }
+
+        .output-label {
+            font-size: 1.125rem; /* text-lg */
+            line-height: 1.75rem; /* leading-7 */
+            font-weight: 700; /* font-bold */
+        }
+        .hsv-output-label {
+            color: #3730a3; /* text-indigo-800 */
+        }
+        .rgb-output-label {
+            color: #115e59; /* text-teal-800 */
+        }
+
+
+        .output-value {
+            font-size: 1.25rem; /* text-xl */
+            line-height: 1.75rem; /* leading-7 */
+            font-family: monospace; /* font-mono */
+        }
+        .hsv-output-value {
+            color: #4f46e5; /* text-indigo-600 */
+        }
+        .rgb-output-value {
+            color: #0f766e; /* text-teal-600 */
+        }
+    </style>
+</head>
+<body
+ class="bg-pink-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="container">
+        
+        <h1>Konverter Warna RGB & HSV</h1>
+
+        <div class="section-box rgb-section-bg">
+            <h2 class="rgb-h2-color">RGB ke HSV</h2>
+            <div class="grid-layout">
+                <div class="input-group">
+                    <div>
+                        <label for="red" class="label-text">Merah (R): <span id="redValue" class="value-span">0</span></label>
+                        <input type="range" id="red" min="0" max="255" value="0">
+                    </div>
+                    <div>
+                        <label for="green" class="label-text">Hijau (G): <span id="greenValue" class="value-span">0</span></label>
+                        <input type="range" id="green" min="0" max="255" value="0">
+                    </div>
+                    <div>
+                        <label for="blue" class="label-text">Biru (B): <span id="blueValue" class="value-span">0</span></label>
+                        <input type="range" id="blue" min="0" max="255" value="0">
+                    </div>
+                    <button id="convertRgbToHsvBtn" class="convert-button">
+                        Konversi RGB ke HSV
+                    </button>
+                </div>
+
+                <div class="color-display-area">
+                    <div id="rgbColorBox" class="color-box" style="background-color: rgb(0,0,0);"></div>
+                    <p class="color-box-label">Warna RGB Saat Ini</p>
+                    <div class="output-box hsv-output-box">
+                        <p class="output-label hsv-output-label">Nilai HSV:</p>
+                        <p id="hsvOutput" class="output-value hsv-output-value">H: 0°, S: 0%, V: 0%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box hsv-section-bg">
+            <h2 class="hsv-h2-color">HSV ke RGB</h2>
+            <div class="grid-layout">
+                <div class="input-group">
+                    <div>
+                        <label for="hue" class="label-text">Hue (H): <span id="hueValue" class="value-span">0°</span></label>
+                        <input type="range" id="hue" min="0" max="360" value="0">
+                    </div>
+                    <div>
+                        <label for="saturation" class="label-text">Saturasi (S): <span id="saturationValue" class="value-span">0%</span></label>
+                        <input type="range" id="saturation" min="0" max="100" value="0">
+                    </div>
+                    <div>
+                        <label for="value" class="label-text">Value (V): <span id="valueValue" class="value-span">0%</span></label>
+                        <input type="range" id="value" min="0" max="100" value="0">
+                    </div>
+                    <button id="convertHsvToRgbBtn" class="convert-button">
+                        Konversi HSV ke RGB
+                    </button>
+                </div>
+
+                <div class="color-display-area">
+                    <div id="hsvColorBox" class="color-box" style="background-color: hsl(0,0%,0%);"></div>
+                    <p class="color-box-label">Warna HSV Saat Ini</p>
+                    <div class="output-box rgb-output-box">
+                        <p class="output-label rgb-output-label">Nilai RGB:</p>
+                        <p id="rgbOutput" class="output-value rgb-output-value">R: 0, G: 0, B: 0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const redInput = document.getElementById('red');
+        const greenInput = document.getElementById('green');
+        const blueInput = document.getElementById('blue');
+        const redValueSpan = document.getElementById('redValue');
+        const greenValueSpan = document.getElementById('greenValue');
+        const blueValueSpan = document.getElementById('blueValue');
+        const rgbColorBox = document.getElementById('rgbColorBox');
+        const hsvOutput = document.getElementById('hsvOutput');
+        const convertRgbToHsvBtn = document.getElementById('convertRgbToHsvBtn');
+
+        const hueInput = document.getElementById('hue');
+        const saturationInput = document.getElementById('saturation');
+        const valueInput = document.getElementById('value');
+        const hueValueSpan = document.getElementById('hueValue');
+        const saturationValueSpan = document.getElementById('saturationValue');
+        const valueValueSpan = document.getElementById('valueValue');
+        const hsvColorBox = document.getElementById('hsvColorBox');
+        const rgbOutput = document.getElementById('rgbOutput');
+        const convertHsvToRgbBtn = document.getElementById('convertHsvToRgbBtn');
+
+        /**
+         * Converts an RGB color value to HSV. Conversion formula
+         * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
+         * Assumes r, g, and b are contained in the set [0, 255] and
+         * returns h, s, and v in the set [0, 1].
+         *
+         * @param   Number  r       The red color value
+         * @param   Number  g       The green color value
+         * @param   Number  b       The blue color value
+         * @return  Array           The HSV representation
+         */
+        function rgbToHsv(r, g, b) {
+            // Normalize R, G, B to the range [0, 1] as per PDF formula
+            r /= 255;
+            g /= 255;
+            b /= 255;
+
+            const cmax = Math.max(r, g, b);
+            const cmin = Math.min(r, g, b);
+            const delta = cmax - cmin; // Delta as per PDF
+
+            let h = 0;
+            if (delta === 0) { // If delta is 0, hue is 0
+                h = 0;
+            } else if (cmax === r) { // cmax = R'
+                h = 60 * (((g - b) / delta) % 6);
+            } else if (cmax === g) { // cmax = G'
+                h = 60 * (((b - r) / delta) + 2);
+            } else { // cmax = B'
+                h = 60 * (((r - g) / delta) + 4);
+            }
+
+            // Ensure hue is non-negative
+            if (h < 0) {
+                h += 360;
+            }
+
+            let s = 0;
+            if (cmax === 0) { // If cmax is 0, saturation is 0
+                s = 0;
+            } else {
+                s = delta / cmax;
+            }
+
+            const v = cmax; // Value is cmax
+
+            // Return H (0-360), S (0-100), V (0-100)
+            return [Math.round(h), Math.round(s * 100), Math.round(v * 100)];
+        }
+
+        /**
+         * Converts an HSV color value to RGB. Conversion formula
+         * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
+         * Assumes h, s, and v are contained in the set [0, 1] and
+         * returns r, g, and b in the set [0, 255].
+         *
+         * @param   Number  h       The hue
+         * @param   Number  s       The saturation
+         * @param   Number  v       The value
+         * @return  Array           The RGB representation
+         */
+        function hsvToRgb(h, s, v) {
+            // Normalize S and V to [0, 1]
+            s /= 100;
+            v /= 100;
+
+            const i = Math.floor(h / 60); // [h/60]mod6 from PDF (integer part)
+            const f = (h / 60) - i;      // f = h/60 - hi from PDF
+            const p = v * (1 - s);       // p = v * (1-s) from PDF
+            const q = v * (1 - f * s);   // q = v * (1-f*s) from PDF
+            const t = v * (1 - (1 - f) * s); // t = v * (1-(1-f)*s) from PDF
+
+            let r, g, b;
+
+            switch (i % 6) {
+                case 0: r = v; g = t; b = p; break;
+                case 1: r = q; g = v; b = p; break;
+                case 2: r = p; g = v; b = t; break;
+                case 3: r = p; g = q; b = v; break;
+                case 4: r = t; g = p; b = v; break;
+                case 5: r = v; g = p; b = q; break;
+            }
+
+            // Return R, G, B in the range [0, 255]
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        // --- RGB to HSV Logic ---
+        function updateRgbColor() {
+            const r = redInput.value;
+            const g = greenInput.value;
+            const b = blueInput.value;
+
+            redValueSpan.textContent = r;
+            greenValueSpan.textContent = g;
+            blueValueSpan.textContent = b;
+            rgbColorBox.style.backgroundColor = `rgb(${r},${g},${b})`;
+            performRgbToHsvConversion(); // Convert automatically on input change
+        }
+
+        function performRgbToHsvConversion() {
+            const r = parseInt(redInput.value);
+            const g = parseInt(greenInput.value);
+            const b = parseInt(blueInput.value);
+
+            const [h, s, v] = rgbToHsv(r, g, b);
+            hsvOutput.textContent = `H: ${h}°, S: ${s}%, V: ${v}%`;
+        }
+
+        // Add event listeners for RGB inputs
+        redInput.addEventListener('input', updateRgbColor);
+        greenInput.addEventListener('input', updateRgbColor);
+        blueInput.addEventListener('input', updateRgbColor);
+        // convertRgbToHsvBtn.addEventListener('click', performRgbToHsvConversion); // No longer needed with auto-update
+
+        // Initial update for RGB section
+        updateRgbColor();
+
+
+        // --- HSV to RGB Logic ---
+        function updateHsvColor() {
+            const h = hueInput.value;
+            const s = saturationInput.value;
+            const v = valueInput.value;
+
+            hueValueSpan.textContent = `${h}°`;
+            saturationValueSpan.textContent = `${s}%`;
+            valueValueSpan.textContent = `${v}%`;
+            // Use HSL for CSS display for better visual representation of HSV
+            hsvColorBox.style.backgroundColor = `hsl(${h}, ${s}%, ${v}%)`;
+
+            // Update saturation slider background dynamically based on hue
+            const saturationSlider = document.getElementById('saturation');
+            saturationSlider.style.background = `linear-gradient(to right, #ccc, hsl(${h}, 100%, 50%))`;
+
+            performHsvToRgbConversion(); // Convert automatically on input change
+        }
+
+        function performHsvToRgbConversion() {
+            const h = parseInt(hueInput.value);
+            const s = parseInt(saturationInput.value);
+            const v = parseInt(valueInput.value);
+
+            const [r, g, b] = hsvToRgb(h, s, v);
+            rgbOutput.textContent = `R: ${r}, G: ${g}, B: ${b}`;
+        }
+
+        // Add event listeners for HSV inputs
+        hueInput.addEventListener('input', updateHsvColor);
+        saturationInput.addEventListener('input', updateHsvColor);
+        valueInput.addEventListener('input', updateHsvColor);
+        // convertHsvToRgbBtn.addEventListener('click', performHsvToRgbConversion); // No longer needed with auto-update
+
+        // Initial update for HSV section
+        updateHsvColor();
+    </script>
+</body>
+</html>

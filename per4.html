@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi Algoritma Lingkaran & Elips</title>
+    <style>
+        /* Base styles adapted from Tailwind's preflight and common utilities */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb; /* gray-200 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            line-height: inherit;
+            background-color: #fce7f3; /* bg-pink-100 */
+            padding: 1rem; /* p-4 */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Container styling */
+        .max-w-4xl {
+            max-width: 56rem; /* Equivalent to 900px, common for max-w-4xl */
+        }
+        .w-full {
+            width: 100%;
+        }
+        .bg-white {
+            background-color: #fff;
+        }
+        .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .rounded-lg {
+            border-radius: 0.5rem;
+        }
+        .p-6 {
+            padding: 1.5rem;
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:p-8 {
+                padding: 2rem;
+            }
+        }
+        .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 2rem;
+            margin-bottom: 0;
+        }
+
+        /* Heading styles */
+        .text-3xl {
+            font-size: 1.875rem; /* 30px */
+            line-height: 2.25rem; /* 36px */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:text-4xl {
+                font-size: 2.25rem; /* 36px */
+                line-height: 2.5rem; /* 40px */
+            }
+        }
+        .font-extrabold {
+            font-weight: 800;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-gray-800 {
+            color: #1f2937;
+        }
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Grid layout */
+        .grid {
+            display: grid;
+        }
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .gap-6 {
+            gap: 1.5rem;
+        }
+
+        /* Input section styling */
+        .border {
+            border-width: 1px;
+        }
+        .border-blue-200 {
+            border-color: #bfdbfe;
+        }
+        .rounded-xl {
+            border-radius: 0.75rem;
+        }
+        .p-4 {
+            padding: 1rem;
+        }
+        .bg-blue-50 {
+            background-color: #eff6ff;
+        }
+        .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .text-2xl {
+            font-size: 1.5rem; /* 24px */
+            line-height: 2rem; /* 32px */
+        }
+        .font-bold {
+            font-weight: 700;
+        }
+        .text-blue-700 {
+            color: #1d4ed8;
+        }
+        .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 1.5rem;
+            margin-bottom: 0;
+        }
+        .space-y-2 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+        }
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+        .block {
+            display: block;
+        }
+        .text-gray-700 {
+            color: #374151;
+        }
+        .font-medium {
+            font-weight: 500;
+        }
+        .mb-1 {
+            margin-bottom: 0.25rem;
+        }
+        input[type="number"] {
+            display: block; /* w-full implied */
+            padding: 0.5rem; /* p-2 */
+            border-width: 1px;
+            border-color: #d1d5db; /* border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            /* Focus styles: mimic Tailwind's focus:ring and focus:border */
+            outline: 2px solid transparent; /* For focus outline */
+            outline-offset: 2px;
+            box-shadow: none; /* Reset default browser shadow */
+            transition: all 0.15s ease-in-out; /* Smooth transition for focus */
+        }
+        input[type="number"]:focus {
+            border-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* Simulating focus:ring-blue-500 */
+        }
+
+        .text-xl {
+            font-size: 1.25rem; /* 20px */
+            line-height: 1.75rem; /* 28px */
+        }
+        .font-semibold {
+            font-weight: 600;
+        }
+        .text-blue-600 {
+            color: #2563eb;
+        }
+
+        .border-blue-300 {
+            border-color: #93c5fd;
+        }
+        .my-4 {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Button styling */
+        button {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 0.5rem; /* rounded-lg */
+            padding-top: 0.5rem; /* py-2 */
+            padding-bottom: 0.5rem;
+            padding-left: 1rem; /* px-4 */
+            padding-right: 1rem;
+            font-weight: 700; /* font-bold */
+            color: #fff; /* text-white */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            display: block; /* w-full */
+            width: 100%; /* w-full */
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .bg-indigo-600 {
+            background-color: #4f46e5;
+        }
+        .hover\:bg-indigo-700:hover {
+            background-color: #4338ca;
+        }
+
+        .bg-teal-600 {
+            background-color: #0d9488;
+        }
+        .hover\:bg-teal-700:hover {
+            background-color: #0f766e;
+        }
+
+        .bg-red-500 {
+            background-color: #ef4444;
+        }
+        .hover\:bg-red-600:hover {
+            background-color: #dc2626;
+        }
+        .mt-6 {
+            margin-top: 1.5rem;
+        }
+
+
+        /* Canvas section styling */
+        .flex-col {
+            flex-direction: column;
+        }
+        .items-center {
+            align-items: center;
+        }
+        .justify-center {
+            justify-content: center;
+        }
+        .border-gray-300 {
+            border-color: #d1d5db;
+        }
+        .bg-gray-50 {
+            background-color: #f9fafb;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            width: 100%; /* w-full */
+            height: auto; /* h-auto */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+        .text-gray-600 {
+            color: #4b5563;
+        }
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+        .text-sm {
+            font-size: 0.875rem; /* 14px */
+            line-height: 1.25rem; /* 20px */
+        }
+        .mt-4 {
+            margin-top: 1rem;
+        }
+        .p-3 {
+            padding: 0.75rem;
+        }
+        .bg-gray-100 {
+            background-color: #f3f4f6;
+        }
+        .border-gray-200 {
+            border-color: #e5e7eb;
+        }
+        .text-gray-700 {
+            color: #374151;
+        }
+        .overflow-auto {
+            overflow: auto;
+        }
+        .h-32 {
+            height: 8rem; /* 128px */
+        }
+    </style>
+</head>
+<body class="bg-pink-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="max-w-4xl w-full bg-white shadow-lg rounded-lg p-6 md:p-8 space-y-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6">
+            Visualisasi Algoritma Lingkaran & Elips
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-6 border border-blue-200 rounded-xl p-4 bg-blue-50 shadow-md">
+                <h2 class="text-2xl font-bold text-blue-700 mb-4">Input Parameter</h2>
+
+                <div class="space-y-2">
+                    <h3 class="text-xl font-semibold text-blue-600">Lingkaran</h3>
+                    <div>
+                        <label for="circleCx" class="block text-gray-700 font-medium mb-1">Pusat X (Cx):</label>
+                        <input type="number" id="circleCx" value="0" class="w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label for="circleCy" class="block text-gray-700 font-medium mb-1">Pusat Y (Cy):</label>
+                        <input type="number" id="circleCy" value="0" class="w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label for="circleR" class="block text-gray-700 font-medium mb-1">Jari-jari (R):</label>
+                        <input type="number" id="circleR" value="6" class="w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <button id="drawCircleBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Gambar Lingkaran (Midpoint)
+                    </button>
+                </div>
+
+                <hr class="border-blue-300 my-4">
+
+                <div class="space-y-2">
+                    <h3 class="text-xl font-semibold text-blue-600">Elips</h3>
+                    <div>
+                        <label for="ellipseCx" class="block text-gray-700 font-medium mb-1">Pusat X (Cx):</label>
+                        <input type="number" id="ellipseCx" value="0" class="w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label for="ellipseCy" class="block text-gray-700 font-medium mb-1">Pusat Y (Cy):</label>
+                        <input type="number" id="ellipseCy" value="0" class="w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label for="ellipseRx" class="block text-gray-700 font-medium mb-1">Radius X (Rx):</label>
+                        <input type="number" id="ellipseRx" value="8" class="w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label for="ellipseRy" class="block text-gray-700 font-medium mb-1">Radius Y (Ry):</label>
+                        <input type="number" id="ellipseRy" value="5" class="w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <button id="drawEllipseBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        Gambar Elips (Midpoint)
+                    </button>
+                </div>
+
+                <button id="clearCanvasBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md mt-6">
+                    Hapus Kanvas
+                </button>
+            </div>
+
+            <div class="flex flex-col items-center justify-center border border-gray-300 rounded-xl p-4 bg-gray-50 shadow-md">
+                <canvas id="geometryCanvas" width="400" height="400" class="w-full h-auto rounded-md"></canvas>
+                <p class="text-gray-600 mt-2 text-sm">Visualisasi geometri akan ditampilkan di sini.</p>
+                <div id="outputLog" class="mt-4 p-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-700 overflow-auto h-32 w-full">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('geometryCanvas');
+        const ctx = canvas.getContext('2d');
+        const outputLog = document.getElementById('outputLog');
+
+        // Input elements for Circle
+        const circleCxInput = document.getElementById('circleCx');
+        const circleCyInput = document.getElementById('circleCy');
+        const circleRInput = document.getElementById('circleR');
+        const drawCircleBtn = document.getElementById('drawCircleBtn');
+
+        // Input elements for Ellipse
+        const ellipseCxInput = document.getElementById('ellipseCx');
+        const ellipseCyInput = document.getElementById('ellipseCy');
+        const ellipseRxInput = document.getElementById('ellipseRx');
+        const ellipseRyInput = document.getElementById('ellipseRy');
+        const drawEllipseBtn = document.getElementById('drawEllipseBtn');
+
+        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+
+        // Scaling factor for better visualization on canvas
+        const SCALE = 20;
+        const CANVAS_CENTER_X = canvas.width / 2;
+        const CANVAS_CENTER_Y = canvas.height / 2;
+
+        /**
+         * Clears the canvas and the output log.
+         */
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            outputLog.innerHTML = '';
+            drawGrid(); // Redraw grid after clearing
+        }
+
+        /**
+         * Logs a message to the output log.
+         * @param {string} message - The message to log.
+         * @param {string} color - The color of the text (e.g., 'blue', 'green', 'purple').
+         */
+        function logMessage(message, color = 'black') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = color;
+            outputLog.appendChild(p);
+            outputLog.scrollTop = outputLog.scrollHeight; // Auto-scroll to bottom
+        }
+
+        /**
+         * Draws a pixel on the canvas, adjusting for scaling and canvas origin.
+         * Canvas (0,0) is top-left, Cartesian (0,0) is center.
+         * @param {number} x - X coordinate relative to center.
+         * @param {number} y - Y coordinate relative to center.
+         * @param {string} color - Color of the pixel.
+         */
+        function drawPixel(x, y, color) {
+            ctx.fillStyle = color;
+            // Adjust coordinates: x is positive right, y is positive up (Cartesian)
+            // Canvas has y positive down, so subtract y from center Y.
+            const canvasX = CANVAS_CENTER_X + (x * SCALE);
+            const canvasY = CANVAS_CENTER_Y - (y * SCALE);
+            ctx.fillRect(canvasX, canvasY, SCALE, SCALE); // Draw a square pixel
+            ctx.strokeStyle = '#333';
+            ctx.strokeRect(canvasX, canvasY, SCALE, SCALE); // Outline pixel
+        }
+
+        /**
+         * Draws the coordinate grid and axes on the canvas.
+         */
+        function drawGrid() {
+            ctx.strokeStyle = '#e0e0e0'; // Light gray for grid lines
+            ctx.lineWidth = 0.5;
+
+            // Draw vertical grid lines
+            for (let x = CANVAS_CENTER_X % SCALE; x <= canvas.width; x += SCALE) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            // Draw horizontal grid lines
+            for (let y = CANVAS_CENTER_Y % SCALE; y <= canvas.height; y += SCALE) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle = '#666'; // Darker gray for axes
+            ctx.lineWidth = 1;
+
+            // Draw X-axis
+            ctx.beginPath();
+            ctx.moveTo(0, CANVAS_CENTER_Y);
+            ctx.lineTo(canvas.width, CANVAS_CENTER_Y);
+            ctx.stroke();
+
+            // Draw Y-axis
+            ctx.beginPath();
+            ctx.moveTo(CANVAS_CENTER_X, 0);
+            ctx.lineTo(CANVAS_CENTER_X, canvas.height);
+            ctx.stroke();
+
+            // Draw axis labels
+            ctx.fillStyle = '#666';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // X-axis values
+            for (let x = -CANVAS_CENTER_X / SCALE; x <= CANVAS_CENTER_X / SCALE; x += 2) {
+                if (x !== 0) {
+                    ctx.fillText(x, CANVAS_CENTER_X + x * SCALE, CANVAS_CENTER_Y + 15);
+                }
+            }
+            // Y-axis values
+            for (let y = -CANVAS_CENTER_Y / SCALE; y <= CANVAS_CENTER_Y / SCALE; y += 2) {
+                if (y !== 0) {
+                    ctx.fillText(y, CANVAS_CENTER_X - 15, CANVAS_CENTER_Y - y * SCALE);
+                }
+            }
+            ctx.fillText('0', CANVAS_CENTER_X - 15, CANVAS_CENTER_Y + 15); // Origin
+        }
+
+
+        /**
+         * Plots all 8 symmetric points for a circle.
+         * @param {number} cx - Center X coordinate.
+         * @param {number} cy - Center Y coordinate.
+         * @param {number} x - Current X offset from center.
+         * @param {number} y - Current Y offset from center.
+         * @param {string} color - Color for the pixels.
+         */
+        function plotCirclePoints(cx, cy, x, y, color) {
+            drawPixel(cx + x, cy + y, color);
+            drawPixel(cx - x, cy + y, color);
+            drawPixel(cx + x, cy - y, color);
+            drawPixel(cx - x, cy - y, color);
+            drawPixel(cx + y, cy + x, color);
+            drawPixel(cx - y, cy + x, color);
+            drawPixel(cx + y, cy - x, color);
+            drawPixel(cx - y, cy - x, color);
+        }
+
+        /**
+         * Implements the Midpoint Circle Drawing Algorithm (Bresenham's Circle Algorithm).
+         */
+        function drawCircleMidpoint() {
+            clearCanvas();
+            const cx = parseInt(circleCxInput.value);
+            const cy = parseInt(circleCyInput.value);
+            const r = parseInt(circleRInput.value);
+
+            logMessage(`--- Menggambar Lingkaran dengan Midpoint Algorithm ---`, 'blue');
+            logMessage(`Pusat: (${cx}, ${cy}), Jari-jari: ${r}`, 'blue');
+
+            let x = 0;
+            let y = r;
+            let p = 1 - r; // Initial decision parameter for integer radius
+
+            // Plot the first set of 8 points
+            plotCirclePoints(cx, cy, x, y, 'purple');
+            logMessage(`Plotting (0, ${r}) and its symmetric points. Initial p: ${p}`, 'purple');
+
+            while (x < y) {
+                x++;
+                if (p < 0) {
+                    p += 2 * x + 1;
+                } else {
+                    y--;
+                    p += 2 * (x - y) + 1;
+                }
+                plotCirclePoints(cx, cy, x, y, 'purple');
+                logMessage(`Plotting (${x}, ${y}) and its symmetric points. Next p: ${p}`, 'purple');
+            }
+            logMessage(`Lingkaran selesai digambar.`, 'blue');
+        }
+
+        /**
+         * Plots all 4 symmetric points for an ellipse.
+         * @param {number} cx - Center X coordinate.
+         * @param {number} cy - Center Y coordinate.
+         * @param {number} x - Current X offset from center.
+         * @param {number} y - Current Y offset from center.
+         * @param {string} color - Color for the pixels.
+         */
+        function plotEllipsePoints(cx, cy, x, y, color) {
+            drawPixel(cx + x, cy + y, color);
+            drawPixel(cx - x, cy + y, color);
+            drawPixel(cx + x, cy - y, color);
+            drawPixel(cx - x, cy - y, color);
+        }
+
+        /**
+         * Implements the Midpoint Ellipse Drawing Algorithm.
+         */
+        function drawEllipseMidpoint() {
+            clearCanvas();
+            const cx = parseInt(ellipseCxInput.value);
+            const cy = parseInt(ellipseCyInput.value);
+            const rx = parseInt(ellipseRxInput.value);
+            const ry = parseInt(ellipseRyInput.value);
+
+            logMessage(`--- Menggambar Elips dengan Midpoint Algorithm ---`, 'green');
+            logMessage(`Pusat: (${cx}, ${cy}), Rx: ${rx}, Ry: ${ry}`, 'green');
+
+            let x = 0;
+            let y = ry;
+
+            // Region 1 (slope |dy/dx| < 1)
+            let p1 = (ry * ry) - (rx * rx * ry) + (0.25 * rx * rx);
+            logMessage(`Region 1: Initial p1: ${p1}`, 'green');
+
+            while ((2 * ry * ry * x) < (2 * rx * rx * y)) {
+                plotEllipsePoints(cx, cy, x, y, 'green');
+                logMessage(`Plotting (${x}, ${y}) and its symmetric points (Region 1).`, 'green');
+                x++;
+                if (p1 < 0) {
+                    p1 += (2 * ry * ry * x) + (ry * ry);
+                } else {
+                    y--;
+                    p1 += (2 * ry * ry * x) - (2 * rx * rx * y) + (ry * ry);
+                }
+            }
+
+            // Region 2 (slope |dy/dx| > 1)
+            let p2 = ((ry * ry) * (x + 0.5) * (x + 0.5)) + ((rx * rx) * (y - 1) * (y - 1)) - (rx * rx * ry * ry);
+            logMessage(`Region 2: Initial p2: ${p2} (from last x, y: ${x}, ${y})`, 'green');
+
+            while (y >= 0) {
+                plotEllipsePoints(cx, cy, x, y, 'green');
+                logMessage(`Plotting (${x}, ${y}) and its symmetric points (Region 2).`, 'green');
+                y--;
+                if (p2 > 0) {
+                    p2 += (rx * rx) - (2 * rx * rx * y);
+                } else {
+                    x++;
+                    p2 += (2 * ry * ry * x) - (2 * rx * rx * y) + (rx * rx);
+                }
+            }
+            logMessage(`Elips selesai digambar.`, 'green');
+        }
+
+        // Event Listeners
+        drawCircleBtn.addEventListener('click', drawCircleMidpoint);
+        drawEllipseBtn.addEventListener('click', drawEllipseMidpoint);
+        clearCanvasBtn.addEventListener('click', clearCanvas);
+
+        // Initial draw
+        drawGrid();
+    </script>
+</body>
+</html>
